@@ -5,12 +5,22 @@ DotNetEnv.Env.Load();
 
 var builder = WebApplication.CreateBuilder(args);
 
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
-    ?? $"Host={Environment.GetEnvironmentVariable("DB_HOST")};" +
-       $"Port={Environment.GetEnvironmentVariable("DB_PORT") ?? "5432"};" +
-       $"Database={Environment.GetEnvironmentVariable("DB_NAME")};" +
-       $"Username={Environment.GetEnvironmentVariable("DB_USER")};" +
-       $"Password={Environment.GetEnvironmentVariable("DB_PASSWORD")}";
+string connectionString;
+
+var dbHost = Environment.GetEnvironmentVariable("DB_HOST");
+if (!string.IsNullOrEmpty(dbHost))
+{
+    connectionString = $"Host={dbHost};" +
+                       $"Port={Environment.GetEnvironmentVariable("DB_PORT") ?? "5432"};" +
+                       $"Database={Environment.GetEnvironmentVariable("DB_NAME")};" +
+                       $"Username={Environment.GetEnvironmentVariable("DB_USER")};" +
+                       $"Password={Environment.GetEnvironmentVariable("DB_PASSWORD")}";
+}
+else
+{
+    connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
+        ?? throw new InvalidOperationException("Brak konfiguracji po≥πczenia z bazπ danych (sprawdü .env lub appsettings.json).");
+}
 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(connectionString)
