@@ -1,0 +1,51 @@
+﻿@page
+@model Agroskalka.Pages.PriceListModel
+
+@{
+    ViewData["Title"] = "Cennik";
+}
+
+<div class="container mt-5">
+    <h2 class="text-center mb-4">Cennik biletów</h2>
+
+    @if (Model.Tariff == null)
+    {
+            <p class="text-center">
+                Aktualny cennik nie jest jeszcze dostępny.
+            </p>
+    }
+    else
+    {
+            <div class="table-responsive">
+                <table class="table table-bordered text-center">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Rodzaj biletu</th>
+                            <th>Cena</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Bilet dla dziecka</td>
+                            <td>@Model.Tariff.KidPrice.ToString("0.00") zł</td>
+                        </tr>
+                        <tr>
+                            <td>Bilet dla osoby dorosłej</td>
+                            <td>@Model.Tariff.AdultPrice.ToString("0.00") zł</td>
+                        </tr>
+                        <tr>
+                            <td>Bilet dla seniora</td>
+                            <td>@Model.Tariff.SeniorPrice.ToString("0.00") zł</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <p class="text-muted text-center">
+                    Cennik obowiązuje od
+                @Model.Tariff.ValidFrom.ToString("dd.MM.yyyy")
+                    do
+                @Model.Tariff.ValidTo.ToString("dd.MM.yyyy").
+                </p>
+            </div>
+    }
+</div>

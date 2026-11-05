@@ -1,5 +1,7 @@
 using Agroskalka.Data;
 using Microsoft.EntityFrameworkCore;
+using Agroskalka.Models;
+using Microsoft.AspNetCore.Identity;
 
 DotNetEnv.Env.Load();
 
@@ -16,10 +18,99 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(connectionString)
            .UseSnakeCaseNamingConvention());
 
+
+// ASP.NET Identity
+builder.Services.AddIdentity<User, Role>(o =>
+{
+    o.User.RequireUniqueEmail = true;
+    o.Password.RequiredLength = 6;
+    o.Password.RequireNonAlphanumeric = false;
+    o.Lockout.MaxFailedAccessAttempts = 5;
+})
+.AddEntityFrameworkStores<AppDbContext>();
+
+// Konfiguracja ciasteczek logowania
+builder.Services.ConfigureApplicationCookie(o =>
+{
+    o.LoginPath = "/Identity/Account/Login";
+    o.AccessDeniedPath = "/Identity/Account/AccessDenied";
+    o.ExpireTimeSpan = TimeSpan.FromHours(8);
+    o.SlidingExpiration = true;
+});
+
+// Autoryzacja
+builder.Services.AddAuthorization(o =>
+{
+    o.AddPolicy("AdminOnly", p => p.RequireRole("Admin"));
+    o.AddPolicy("ClientOnly", p => p.RequireRole("Client"));
+});
+
 builder.Services.AddControllersWithViews();
-builder.Services.AddRazorPages();
+
+// Zabezpieczenie folderï¿½w Razor Pages
+builder.Services.AddRazorPages(o =>
+{
+    o.Conventions.AuthorizeFolder("/Admin", "AdminOnly");
+    o.Conventions.AuthorizeFolder("/Client", "ClientOnly");
+});
+
 
 var app = builder.Build();
+
+// Seeder - tworzenie domyï¿½lnych rï¿½l i administratora
+using (var scope = app.Services.CreateScope())
+{
+    var roles = scope.ServiceProvider.GetRequiredService<RoleManager<Role>>();
+    var users = scope.ServiceProvider.GetRequiredService<UserManager<User>>();
+
+    var defaultRoles = new[]
+    {
+        (Name: "Admin", Alias: "Administrator"),
+        (Name: "Client", Alias: "Klient")
+    };
+
+    foreach (var (name, alias) in defaultRoles)
+    {
+        if (!await roles.RoleExistsAsync(name))
+        {
+            await roles.CreateAsync(new Role
+            {
+                Name = name,
+                Alias = alias
+            });
+        }
+    }
+
+    const string adminEmail = "account@example.com";
+
+    if (await users.FindByEmailAsync(adminEmail) == null)
+    {
+        var admin = new User
+        {
+            UserName = adminEmail,
+            Email = adminEmail,
+            EmailConfirmed = true,
+            Name = "Admin",
+            Surname = "Admin",
+            IsActive = true,
+            IsApproved = true
+        };
+
+        var result = await users.CreateAsync(admin, "Haslo1");
+
+        if (result.Succeeded)
+        {
+            await users.AddToRoleAsync(admin, "Admin");
+        }
+        else
+        {
+            foreach (var error in result.Errors)
+            {
+                Console.WriteLine($"Admin creation error: {error.Description}");
+            }
+        }
+    }
+}
 
 if (!app.Environment.IsDevelopment())
 {
@@ -32,9 +123,11 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
+// Uwierzytelnianie musi byï¿½ przed autoryzacjï¿½
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapRazorPages();
-app.MapDefaultControllerRoute(); // jeœli u¿ywasz kontrolerów MVC obok Razor Pages
+app.MapDefaultControllerRoute(); // jeï¿½li uï¿½ywasz kontrolerï¿½w MVC obok Razor Pages
 
 app.Run();

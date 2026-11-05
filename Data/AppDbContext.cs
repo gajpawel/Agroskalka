@@ -1,19 +1,14 @@
-﻿using System.Collections.Generic;
-using System.Reflection.Emit;
-using Agroskalka.Models;
-using Microsoft.AspNetCore.Identity;
+﻿using Agroskalka.Models;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 
 namespace Agroskalka.Data;
 
-public class AppDbContext : DbContext
+public class AppDbContext : IdentityDbContext<User, Role, int>
 {
     public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
     {
     }
-
-    public DbSet<User> Users => Set<User>();
-    public DbSet<Role> Roles => Set<Role>();
     public DbSet<Tariff> Tariffs => Set<Tariff>();
     public DbSet<Schedule> Schedules => Set<Schedule>();
     public DbSet<Ticket> Tickets => Set<Ticket>();
@@ -35,12 +30,7 @@ public class AppDbContext : DbContext
         modelBuilder.Entity<Ticket>()
             .Property(t => t.Price).HasPrecision(10, 2);
 
-        // Relacja User -> Role
-        modelBuilder.Entity<User>()
-            .HasOne(u => u.Role)
-            .WithMany(r => r.Users)
-            .HasForeignKey(u => u.RoleId)
-            .OnDelete(DeleteBehavior.Restrict);
+        // Relacja User -> Role - asp.net realizuje sam
 
         // Relacja Ticket -> User
         modelBuilder.Entity<Ticket>()
@@ -56,34 +46,5 @@ public class AppDbContext : DbContext
             .HasForeignKey(t => t.TariffId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        modelBuilder.Entity<Role>().HasData(
-            new Role
-            {
-                Id = 1,
-                Alias = "Administrator",
-                Name = "admin"
-            },
-            new Role
-            {
-                Id = 2,
-                Alias = "Klient",
-                Name = "client"
-            }
-        );
-
-        var hasher = new PasswordHasher<User>();
-        var adminUser = new User
-        {
-            Id = 1,
-            RoleId = 1,
-            Name = "Główny",
-            Surname = "Administrator",
-            Email = "account@example.com",
-            IsActive = true,
-            IsApproved = true
-        };
-        adminUser.Password = hasher.HashPassword(adminUser, "Haslo1");
-
-        modelBuilder.Entity<User>().HasData(adminUser);
     }
 }

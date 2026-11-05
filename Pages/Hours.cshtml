@@ -1,0 +1,60 @@
+﻿@page
+@model Agroskalka.Pages.HoursModel
+
+@{
+    ViewData["Title"] = "Godziny otwarcia";
+}
+
+<div class="container mt-5">
+    <h2 class="text-center mb-4">Godziny otwarcia</h2>
+
+    @if (Model.Schedule == null)
+    {
+            <p class="text-center">
+                Godziny otwarcia nie zostały jeszcze ustalone.
+            </p>
+    }
+    else
+    {
+            <div class="table-responsive">
+                <table class="table table-bordered text-center">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Dzień tygodnia</th>
+                            <th>Godziny otwarcia</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    @if (Model.Schedule.Monday)
+                    {
+                                <tr><td>Poniedziałek</td><td>@Model.Schedule.OpenTime - @Model.Schedule.CloseTime</td></tr>
+                    }
+                    @if (Model.Schedule.Tuesday)
+                    {
+                                <tr><td>Wtorek</td><td>@Model.Schedule.OpenTime - @Model.Schedule.CloseTime</td></tr>
+                    }
+                    @if (Model.Schedule.Wednesday)
+                    {
+                                <tr><td>Środa</td><td>@Model.Schedule.OpenTime - @Model.Schedule.CloseTime</td></tr>
+                    }
+                    @if (Model.Schedule.Thursday)
+                    {
+                                <tr><td>Czwartek</td><td>@Model.Schedule.OpenTime - @Model.Schedule.CloseTime</td></tr>
+                    }
+                    @if (Model.Schedule.Friday)
+                    {
+                                <tr><td>Piątek</td><td>@Model.Schedule.OpenTime - @Model.Schedule.CloseTime</td></tr>
+                    }
+                    @if (Model.Schedule.Saturday)
+                    {
+                                <tr><td>Sobota</td><td>@Model.Schedule.OpenTime - @Model.Schedule.CloseTime</td></tr>
+                    }
+                    @if (Model.Schedule.Sunday)
+                    {
+                                <tr><td>Niedziela</td><td>@Model.Schedule.OpenTime - @Model.Schedule.CloseTime</td></tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+    }
+</div>
