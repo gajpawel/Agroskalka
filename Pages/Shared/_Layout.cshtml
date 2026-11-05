@@ -20,11 +20,48 @@
                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
                     <ul class="navbar-nav flex-grow-1">
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-page="/Index">Home</a>
+                            <a class="nav-link text-dark" asp-area="" asp-page="/Hours">Godziny otwarcia</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-page="/Privacy">Privacy</a>
+                            <a class="nav-link text-dark" asp-area="" asp-page="/PriceList">Cennik</a>
                         </li>
+                    </ul>
+
+                    <ul class="navbar-nav align-items-sm-center">
+                                        @if (User.Identity?.IsAuthenticated == true)
+                                        {
+                                <li class="nav-item">
+                                    <span class="nav-link">
+                                        Witaj, @User.Identity.Name!
+                                    </span>
+                                </li>
+                                <li class="nav-item">
+                                    <form asp-area="Identity"
+                                          asp-page="/Account/Logout"
+                                          method="post">
+                                        <button type="submit" class="btn btn-outline-danger btn-sm">
+                                            Wyloguj się
+                                        </button>
+                                    </form>
+                                </li>
+                                        }
+                                        else
+                                        {
+                                <li class="nav-item me-sm-2">
+                                    <a asp-area="Identity"
+                                       asp-page="/Account/Login"
+                                       class="btn btn-outline-primary btn-sm">
+                                        Zaloguj się
+                                    </a>
+                                </li>
+                                <li class="nav-item mt-2 mt-sm-0">
+                                    <a asp-area="Identity"
+                                       asp-page="/Account/Register"
+                                       class="btn btn-primary btn-sm">
+                                        Zarejestruj się
+                                    </a>
+                                </li>
+                                        }
                     </ul>
                 </div>
             </div>
@@ -38,7 +75,7 @@
 
     <footer class="border-top footer text-muted">
         <div class="container">
-            &copy; 2026 - Agroskalka - <a asp-area="" asp-page="/Privacy">Privacy</a>
+            &copy; 2026 - Agroskalka </a>
         </div>
     </footer>
 

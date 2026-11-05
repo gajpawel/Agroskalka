@@ -17,12 +17,6 @@ public class IndexModel : PageModel
 
     public async Task OnGetAsync()
     {
-        // Pobieramy role z bazy i ³¹czymy je przecinkiem
-        var roles = await _context.Roles
-            .OrderBy(r => r.Id)
-            .Select(r => r.Alias)
-            .ToListAsync();
-
-        RolesText = $"*Test bazy* Role w systemie: {string.Join(", ", roles)}";
+        
     }
 }

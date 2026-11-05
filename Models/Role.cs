@@ -1,10 +1,8 @@
-﻿namespace Agroskalka.Models;
+﻿using Microsoft.AspNetCore.Identity;
 
-public class Role
+namespace Agroskalka.Models;
+
+public class Role : IdentityRole<int>
 {
-    public int Id { get; set; }
-    public string Name { get; set; } = string.Empty;
-    public string Alias { get; set; } = string.Empty;
-
-    public ICollection<User> Users { get; set; } = new List<User>();
+    public string Alias { get; set; } = string.Empty; // nazwa do wyświetlania, np. "Klient"
 }
