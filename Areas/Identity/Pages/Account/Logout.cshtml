@@ -1,21 +1,37 @@
 ﻿@page
 @model LogoutModel
 @{
-    ViewData["Title"] = "Log out";
+    ViewData["Title"] = "Wylogowanie";
 }
 
-<header>
-    <h1>@ViewData["Title"]</h1>
-    @{
-        if (User.Identity?.IsAuthenticated ?? false)
-        {
-            <form class="form-inline" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Page("/", new { area = "" })" method="post">
-                <button type="submit" class="nav-link btn btn-link text-dark">Click here to Logout</button>
-            </form>
-        }
-        else
-        {
-            <p>You have successfully logged out of the application.</p>
-        }
-    }
-</header>
+<div class="max-w-2xl mx-auto mt-12 px-4 sm:px-6 lg:px-8 text-center">
+    <div class="bg-white p-8 sm:p-12 rounded-3xl shadow-sm border border-slate-200">
+        
+        <header>
+            <h1 class="text-3xl font-extrabold text-slate-900 mb-6">@ViewData["Title"]</h1>
+            @{
+                if (User.Identity?.IsAuthenticated ?? false)
+                {
+                    <form asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Page("/", new { area = "" })" method="post" class="m-0">
+                        <button type="submit" class="bg-red-600 text-white hover:bg-red-700 px-8 py-3 rounded-xl font-bold shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+                            Kliknij tutaj, aby się wylogować
+                        </button>
+                    </form>
+                }
+                else
+                {
+                    <div class="inline-block bg-green-50 border border-green-200 text-green-700 px-6 py-4 rounded-xl font-medium mb-6">
+                        Pomyślnie wylogowano z aplikacji.
+                    </div>
+                    
+                    <div>
+                        <a asp-page="/Index" class="text-purple-600 hover:text-purple-700 font-medium transition-colors">
+                            &larr; Wróć na stronę główną
+                        </a>
+                    </div>
+                }
+            }
+        </header>
+        
+    </div>
+</div>

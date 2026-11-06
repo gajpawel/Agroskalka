@@ -5,56 +5,79 @@
     ViewData["Title"] = "Godziny otwarcia";
 }
 
-<div class="container mt-5">
-    <h2 class="text-center mb-4">Godziny otwarcia</h2>
+<div class="max-w-4xl mx-auto mt-12 px-4 sm:px-6 lg:px-8">
+    <h2 class="text-3xl font-bold text-center text-slate-800 mb-8">Godziny otwarcia</h2>
 
     @if (Model.Schedule == null)
     {
-            <p class="text-center">
+        <div class="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-md">
+            <p class="text-center text-blue-700 font-medium m-0">
                 Godziny otwarcia nie zostały jeszcze ustalone.
             </p>
+        </div>
     }
     else
     {
-            <div class="table-responsive">
-                <table class="table table-bordered text-center">
-                    <thead class="table-light">
-                        <tr>
-                            <th>Dzień tygodnia</th>
-                            <th>Godziny otwarcia</th>
-                        </tr>
-                    </thead>
-                    <tbody>
+        <div class="overflow-x-auto bg-white rounded-xl shadow-sm border border-slate-200">
+            <table class="w-full text-center border-collapse">
+                <thead class="bg-slate-50 border-b border-slate-200">
+                    <tr>
+                        <th class="py-4 px-6 font-semibold text-slate-700">Dzień tygodnia</th>
+                        <th class="py-4 px-6 font-semibold text-slate-700">Godziny otwarcia</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-200">
                     @if (Model.Schedule.Monday)
                     {
-                                <tr><td>Poniedziałek</td><td>@Model.Schedule.OpenTime - @Model.Schedule.CloseTime</td></tr>
+                        <tr class="hover:bg-slate-50 transition-colors">
+                            <td class="py-4 px-6 text-slate-600 font-medium">Poniedziałek</td>
+                            <td class="py-4 px-6 text-slate-900 font-bold">@Model.Schedule.OpenTime - @Model.Schedule.CloseTime</td>
+                        </tr>
                     }
                     @if (Model.Schedule.Tuesday)
                     {
-                                <tr><td>Wtorek</td><td>@Model.Schedule.OpenTime - @Model.Schedule.CloseTime</td></tr>
+                        <tr class="hover:bg-slate-50 transition-colors">
+                            <td class="py-4 px-6 text-slate-600 font-medium">Wtorek</td>
+                            <td class="py-4 px-6 text-slate-900 font-bold">@Model.Schedule.OpenTime - @Model.Schedule.CloseTime</td>
+                        </tr>
                     }
                     @if (Model.Schedule.Wednesday)
                     {
-                                <tr><td>Środa</td><td>@Model.Schedule.OpenTime - @Model.Schedule.CloseTime</td></tr>
+                        <tr class="hover:bg-slate-50 transition-colors">
+                            <td class="py-4 px-6 text-slate-600 font-medium">Środa</td>
+                            <td class="py-4 px-6 text-slate-900 font-bold">@Model.Schedule.OpenTime - @Model.Schedule.CloseTime</td>
+                        </tr>
                     }
                     @if (Model.Schedule.Thursday)
                     {
-                                <tr><td>Czwartek</td><td>@Model.Schedule.OpenTime - @Model.Schedule.CloseTime</td></tr>
+                        <tr class="hover:bg-slate-50 transition-colors">
+                            <td class="py-4 px-6 text-slate-600 font-medium">Czwartek</td>
+                            <td class="py-4 px-6 text-slate-900 font-bold">@Model.Schedule.OpenTime - @Model.Schedule.CloseTime</td>
+                        </tr>
                     }
                     @if (Model.Schedule.Friday)
                     {
-                                <tr><td>Piątek</td><td>@Model.Schedule.OpenTime - @Model.Schedule.CloseTime</td></tr>
+                        <tr class="hover:bg-slate-50 transition-colors">
+                            <td class="py-4 px-6 text-slate-600 font-medium">Piątek</td>
+                            <td class="py-4 px-6 text-slate-900 font-bold">@Model.Schedule.OpenTime - @Model.Schedule.CloseTime</td>
+                        </tr>
                     }
                     @if (Model.Schedule.Saturday)
                     {
-                                <tr><td>Sobota</td><td>@Model.Schedule.OpenTime - @Model.Schedule.CloseTime</td></tr>
+                        <tr class="hover:bg-slate-50 transition-colors">
+                            <td class="py-4 px-6 text-slate-600 font-medium">Sobota</td>
+                            <td class="py-4 px-6 text-slate-900 font-bold">@Model.Schedule.OpenTime - @Model.Schedule.CloseTime</td>
+                        </tr>
                     }
                     @if (Model.Schedule.Sunday)
                     {
-                                <tr><td>Niedziela</td><td>@Model.Schedule.OpenTime - @Model.Schedule.CloseTime</td></tr>
+                        <tr class="hover:bg-slate-50 transition-colors">
+                            <td class="py-4 px-6 text-slate-600 font-medium">Niedziela</td>
+                            <td class="py-4 px-6 text-slate-900 font-bold">@Model.Schedule.OpenTime - @Model.Schedule.CloseTime</td>
+                        </tr>
                     }
-                    </tbody>
-                </table>
-            </div>
+                </tbody>
+            </table>
+        </div>
     }
 </div>

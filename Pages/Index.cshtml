@@ -4,13 +4,29 @@
     ViewData["Title"] = "Strona główna";
 }
 
-
-<div class="text-center">
-    <h1 class="display-4">Agroskałka - Park Rozrywki</h1>
-
-</div>
-
-<div class="bg-purple-600 text-white p-8 rounded-2xl shadow-2xl text-center mt-10">
-    <h1 class="text-4xl font-extrabold tracking-tight">Tailwind CSS działa! 🚀</h1>
-    <p class="mt-4 text-lg text-purple-200">Jeśli widzisz fioletowe tło i zaokrąglone rogi, integracja zakończyła się sukcesem.</p>
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8 sm:mt-12">
+    <div class="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
+        
+        <!-- Główny baner powitalny -->
+        <div class="bg-purple-600 px-6 py-16 sm:px-16 sm:py-24 text-center">
+            <h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-white tracking-tight mb-6">
+                Agroskałka <br class="sm:hidden" />
+                <span class="text-purple-200 text-3xl sm:text-4xl lg:text-5xl block mt-2">Park Rozrywki</span>
+            </h1>
+            <p class="text-lg sm:text-xl text-purple-100 max-w-2xl mx-auto font-medium">
+                Witaj w miejscu, gdzie zabawa łączy się z naturą! Zarezerwuj bilety, sprawdź atrakcje i spędź niezapomniane chwile z całą rodziną.
+            </p>
+            
+            <!-- Przyciski akcji (Call to Action) -->
+            <div class="mt-10 flex flex-col sm:flex-row justify-center gap-4">
+                <a asp-page="/PriceList" class="bg-white text-purple-700 hover:bg-slate-50 px-8 py-3 rounded-xl font-bold shadow-sm transition-colors text-lg">
+                    Cennik i bilety
+                </a>
+                <a asp-page="/Hours" class="border-2 border-purple-400 text-white hover:bg-purple-700 px-8 py-3 rounded-xl font-bold transition-colors text-lg">
+                    Godziny otwarcia
+                </a>
+            </div>
+        </div>
+        
+    </div>
 </div>

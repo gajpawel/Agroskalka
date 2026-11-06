@@ -4,85 +4,86 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - Agroskalka</title>
-    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/Agroskalka.styles.css" asp-append-version="true" />
 </head>
-<body>
-    <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-            <div class="container">
-                <a class="navbar-brand" asp-area="" asp-page="/Index">Agroskalka</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-page="/Hours">Godziny otwarcia</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-page="/PriceList">Cennik</a>
-                        </li>
-                    </ul>
-
-                    <ul class="navbar-nav align-items-sm-center">
-                                        @if (User.Identity?.IsAuthenticated == true)
-                                        {
-                                <li class="nav-item">
-                                    <span class="nav-link">
-                                        Witaj, @User.Identity.Name!
-                                    </span>
-                                </li>
-                                <li class="nav-item">
-                                    <form asp-area="Identity"
-                                          asp-page="/Account/Logout"
-                                          method="post">
-                                        <button type="submit" class="btn btn-outline-danger btn-sm">
-                                            Wyloguj się
-                                        </button>
-                                    </form>
-                                </li>
-                                        }
-                                        else
-                                        {
-                                <li class="nav-item me-sm-2">
-                                    <a asp-area="Identity"
-                                       asp-page="/Account/Login"
-                                       class="btn btn-outline-primary btn-sm">
-                                        Zaloguj się
-                                    </a>
-                                </li>
-                                <li class="nav-item mt-2 mt-sm-0">
-                                    <a asp-area="Identity"
-                                       asp-page="/Account/Register"
-                                       class="btn btn-primary btn-sm">
-                                        Zarejestruj się
-                                    </a>
-                                </li>
-                                        }
-                    </ul>
+<body class="bg-slate-50 min-h-screen flex flex-col font-sans text-slate-900">
+    <header class="bg-white border-b border-slate-200 shadow-sm relative z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                
+                <!-- Logo -->
+                <div class="flex-shrink-0 flex items-center">
+                    <a class="text-2xl font-bold text-slate-800 hover:text-purple-600 transition-colors" asp-area="" asp-page="/Index">
+                        Agroskalka
+                    </a>
                 </div>
+
+                <!-- Nawigacja główna (Desktop) -->
+                <nav class="hidden sm:flex space-x-8">
+                    <a class="text-slate-600 hover:text-purple-600 px-3 py-2 rounded-md font-medium transition-colors" asp-area="" asp-page="/Hours">Godziny otwarcia</a>
+                    <a class="text-slate-600 hover:text-purple-600 px-3 py-2 rounded-md font-medium transition-colors" asp-area="" asp-page="/PriceList">Cennik</a>
+                </nav>
+
+                <!-- Panel Autoryzacji (Desktop) - WYWOŁANIE PARTIALA -->
+                <div class="hidden sm:flex items-center">
+                    <partial name="_LoginPartial" />
+                </div>
+
+                <!-- Przycisk Hamburger (Mobile) -->
+                <div class="flex items-center sm:hidden">
+                    <button type="button" id="mobile-menu-button" class="text-slate-500 hover:text-slate-700 focus:outline-none p-2">
+                        <svg class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                        </svg>
+                    </button>
+                </div>
+
             </div>
-        </nav>
+        </div>
+
+        <!-- Rozwijane Menu Mobilne (Ukryte domyślnie) -->
+        <div id="mobile-menu" class="hidden sm:hidden bg-white border-t border-slate-200 absolute w-full shadow-lg">
+            <div class="px-4 pt-2 pb-4 space-y-1">
+                <a asp-area="" asp-page="/Hours" class="block px-3 py-3 rounded-md text-base font-medium text-slate-700 hover:text-purple-600 hover:bg-slate-50">Godziny otwarcia</a>
+                <a asp-area="" asp-page="/PriceList" class="block px-3 py-3 rounded-md text-base font-medium text-slate-700 hover:text-purple-600 hover:bg-slate-50">Cennik</a>
+            </div>
+            
+            <!-- Panel logowania (Mobile) -->
+            <div class="pt-4 pb-4 border-t border-slate-200 px-4">
+                <partial name="_LoginPartial" />
+            </div>
+        </div>
     </header>
-    <div class="container">
-        <main role="main" class="pb-3">
+
+    <!-- Główny kontener na treść podstron -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full flex-grow py-10">
+        <main role="main">
             @RenderBody()
         </main>
     </div>
 
-    <footer class="border-top footer text-muted">
-        <div class="container">
+    <!-- Stopka -->
+    <footer class="bg-white border-t border-slate-200 mt-auto">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 text-center text-slate-500 text-sm">
             &copy; 2026 - Agroskalka
         </div>
     </footer>
 
-    <script src="~/lib/jquery/dist/jquery.min.js"></script>
-    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
-
     @await RenderSectionAsync("Scripts", required: false)
+
+    <!-- Skrypt obsługujący menu mobilne -->
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const btn = document.getElementById('mobile-menu-button');
+            const menu = document.getElementById('mobile-menu');
+
+            btn.addEventListener('click', () => {
+                menu.classList.toggle('hidden');
+            });
+        });
+    </script>
 </body>
 </html>

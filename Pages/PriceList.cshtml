@@ -5,47 +5,47 @@
     ViewData["Title"] = "Cennik";
 }
 
-<div class="container mt-5">
-    <h2 class="text-center mb-4">Cennik biletów</h2>
+<div class="max-w-4xl mx-auto mt-12 px-4 sm:px-6 lg:px-8">
+    <h2 class="text-3xl font-bold text-center text-slate-800 mb-8">Cennik biletów</h2>
 
     @if (Model.Tariff == null)
     {
-            <p class="text-center">
+        <div class="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-md">
+            <p class="text-center text-blue-700 font-medium m-0">
                 Aktualny cennik nie jest jeszcze dostępny.
             </p>
+        </div>
     }
     else
     {
-            <div class="table-responsive">
-                <table class="table table-bordered text-center">
-                    <thead class="table-light">
-                        <tr>
-                            <th>Rodzaj biletu</th>
-                            <th>Cena</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>Bilet dla dziecka</td>
-                            <td>@Model.Tariff.KidPrice.ToString("0.00") zł</td>
-                        </tr>
-                        <tr>
-                            <td>Bilet dla osoby dorosłej</td>
-                            <td>@Model.Tariff.AdultPrice.ToString("0.00") zł</td>
-                        </tr>
-                        <tr>
-                            <td>Bilet dla seniora</td>
-                            <td>@Model.Tariff.SeniorPrice.ToString("0.00") zł</td>
-                        </tr>
-                    </tbody>
-                </table>
+        <div class="overflow-x-auto bg-white rounded-xl shadow-sm border border-slate-200">
+            <table class="w-full text-center border-collapse">
+                <thead class="bg-slate-50 border-b border-slate-200">
+                    <tr>
+                        <th class="py-4 px-6 font-semibold text-slate-700">Rodzaj biletu</th>
+                        <th class="py-4 px-6 font-semibold text-slate-700">Cena</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-200">
+                    <tr class="hover:bg-slate-50 transition-colors">
+                        <td class="py-4 px-6 text-slate-600 font-medium">Bilet dla dziecka</td>
+                        <td class="py-4 px-6 text-slate-900 font-bold">@Model.Tariff.KidPrice.ToString("0.00") zł</td>
+                    </tr>
+                    <tr class="hover:bg-slate-50 transition-colors">
+                        <td class="py-4 px-6 text-slate-600 font-medium">Bilet dla osoby dorosłej</td>
+                        <td class="py-4 px-6 text-slate-900 font-bold">@Model.Tariff.AdultPrice.ToString("0.00") zł</td>
+                    </tr>
+                    <tr class="hover:bg-slate-50 transition-colors">
+                        <td class="py-4 px-6 text-slate-600 font-medium">Bilet dla seniora</td>
+                        <td class="py-4 px-6 text-slate-900 font-bold">@Model.Tariff.SeniorPrice.ToString("0.00") zł</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
 
-                <p class="text-muted text-center">
-                    Cennik obowiązuje od
-                @Model.Tariff.ValidFrom.ToString("dd.MM.yyyy")
-                    do
-                @Model.Tariff.ValidTo.ToString("dd.MM.yyyy").
-                </p>
-            </div>
+        <p class="text-slate-500 text-center text-sm mt-6">
+            Cennik obowiązuje od <span class="font-semibold text-slate-700">@Model.Tariff.ValidFrom.ToString("dd.MM.yyyy")</span> 
+            do <span class="font-semibold text-slate-700">@Model.Tariff.ValidTo.ToString("dd.MM.yyyy")</span>.
+        </p>
     }
 </div>
