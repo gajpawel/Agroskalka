@@ -29,6 +29,7 @@
                         <th class="px-6 py-4 text-sm font-semibold text-slate-900">Dorosły</th>
                         <th class="px-6 py-4 text-sm font-semibold text-slate-900">Senior</th>
                         <th class="px-6 py-4 text-sm font-semibold text-slate-900">Przejazd kolejką</th>
+                        <th class="px-6 py-4 text-sm font-semibold text-slate-900 text-right">Akcje</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-200">
@@ -58,6 +59,13 @@
                             <td class="px-6 py-4 text-sm text-slate-900 font-bold">@item.AdultPrice.ToString("C")</td>
                             <td class="px-6 py-4 text-sm text-slate-900 font-bold">@item.SeniorPrice.ToString("C")</td>
                             <td class="px-6 py-4 text-sm text-slate-900 font-bold">@item.TrainPrice.ToString("C")</td>
+                            <td class="px-6 py-4 text-right">
+                                <form method="post" asp-page-handler="Delete" asp-route-id="@item.Id" onsubmit="return confirm('Czy na pewno chcesz usunąć ten cennik? Poprzedni cennik zostanie automatycznie wydłużony.');">
+                                    <button type="submit" class="text-red-500 hover:text-red-700 font-medium text-sm transition-colors">
+                                        Usuń
+                                    </button>
+                                </form>
+                            </td>
                         </tr>
                     }
                 </tbody>

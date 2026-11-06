@@ -1,5 +1,6 @@
 ﻿using Agroskalka.Data;
 using Agroskalka.Models;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 
@@ -21,6 +22,17 @@ namespace Agroskalka.Pages.Admin.Tariffs
             Tariffs = await _context.Tariffs
                 .OrderByDescending(t => t.ValidFrom)
                 .ToListAsync();
+        }
+        
+        public async Task<IActionResult> OnPostDeleteAsync(int id)
+        {
+            var tariff = await _context.Tariffs.FindAsync(id);
+            if (tariff == null) return RedirectToPage();
+            
+            _context.Tariffs.Remove(tariff);
+            await _context.SaveChangesAsync();
+
+            return RedirectToPage();
         }
     }
 }

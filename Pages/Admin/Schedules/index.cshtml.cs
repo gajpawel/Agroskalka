@@ -1,5 +1,6 @@
 ﻿using Agroskalka.Data;
 using Agroskalka.Models;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 
@@ -42,5 +43,25 @@ namespace Agroskalka.Pages.Admin.Schedules
                 })
                 .ToList();
         }
+        
+        public async Task<IActionResult> OnPostDeleteAsync(DateTime date)
+        {
+            // Upewniamy się, że przysłana data jest traktowana jako UTC
+            var utcDate = DateTime.SpecifyKind(date, DateTimeKind.Utc);
+
+            // Pobieramy całą paczkę rekordów przypisaną do tego dnia
+            var schedulesToDelete = await _context.Schedules
+                .Where(s => s.ValidFrom == utcDate)
+                .ToListAsync();
+
+            if (!schedulesToDelete.Any()) return RedirectToPage();
+
+            _context.Schedules.RemoveRange(schedulesToDelete);
+            await _context.SaveChangesAsync();
+
+            return RedirectToPage();
+        }
     }
+    
+    
 }

@@ -102,7 +102,7 @@ namespace Agroskalka.Pages.Admin.Schedules
             }
 
             await _context.SaveChangesAsync();
-            return RedirectToPage("/Admin/Index"); // Na razie wracamy do panelu
+            return RedirectToPage("/Admin/Schedules/Index");
         }
     }
 }

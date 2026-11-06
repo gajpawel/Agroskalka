@@ -26,6 +26,7 @@
                         <th class="px-6 py-4 text-sm font-semibold text-slate-900">Ważny od</th>
                         <th class="px-6 py-4 text-sm font-semibold text-slate-900">Ważny do</th>
                         <th class="px-6 py-4 text-sm font-semibold text-slate-900">Godziny i dni</th>
+                        <th class="px-6 py-4 text-sm font-semibold text-slate-900 text-right">Akcje</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-200">
@@ -74,6 +75,13 @@
                                         }
                                     }
                                 </div>
+                            </td>
+                            <td class="px-6 py-4 text-right align-top">
+                                <form method="post" asp-page-handler="Delete" asp-route-date="@group.ValidFrom.ToString("yyyy-MM-ddTHH:mm:ssZ")" onsubmit="return confirm('Czy na pewno chcesz usunąć ten harmonogram?');">
+                                    <button type="submit" class="text-red-500 hover:text-red-700 font-medium text-sm transition-colors">
+                                        Usuń
+                                    </button>
+                                </form>
                             </td>
                         </tr>
                     }
