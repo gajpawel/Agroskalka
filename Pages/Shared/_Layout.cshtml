@@ -24,6 +24,14 @@
                 <nav class="hidden sm:flex space-x-8">
                     <a class="text-slate-600 hover:text-purple-600 px-3 py-2 rounded-md font-medium transition-colors" asp-area="" asp-page="/Hours">Godziny otwarcia</a>
                     <a class="text-slate-600 hover:text-purple-600 px-3 py-2 rounded-md font-medium transition-colors" asp-area="" asp-page="/PriceList">Cennik</a>
+    
+                    <!-- Link widoczny tylko dla Administratora -->
+                    @if (User.IsInRole("Admin"))
+                    {
+                        <a class="text-blue-600 hover:text-blue-800 px-3 py-2 rounded-md font-bold transition-colors flex items-center gap-1" asp-area="" asp-page="/Admin/Index">
+                            Panel Admina
+                        </a>
+                    }
                 </nav>
 
                 <!-- Panel Autoryzacji (Desktop) - WYWOŁANIE PARTIALA -->
@@ -48,6 +56,13 @@
             <div class="px-4 pt-2 pb-4 space-y-1">
                 <a asp-area="" asp-page="/Hours" class="block px-3 py-3 rounded-md text-base font-medium text-slate-700 hover:text-purple-600 hover:bg-slate-50">Godziny otwarcia</a>
                 <a asp-area="" asp-page="/PriceList" class="block px-3 py-3 rounded-md text-base font-medium text-slate-700 hover:text-purple-600 hover:bg-slate-50">Cennik</a>
+        
+                @if (User.IsInRole("Admin"))
+                {
+                    <a asp-area="" asp-page="/Admin/Index" class="block px-3 py-3 rounded-md text-base font-bold text-blue-700 bg-blue-50 hover:bg-blue-100">
+                        Panel Admina
+                    </a>
+                }
             </div>
             
             <!-- Panel logowania (Mobile) -->
