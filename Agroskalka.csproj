@@ -26,4 +26,8 @@
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.0" />
   </ItemGroup>
 
+  <Target Name="TailwindCSS" BeforeTargets="Build">
+    <Exec Command="npx @tailwindcss/cli -i ./wwwroot/css/app.css -o ./wwwroot/css/site.css" />
+  </Target>
+  
 </Project>
