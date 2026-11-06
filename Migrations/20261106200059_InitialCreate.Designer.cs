@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Agroskalka.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20261105150249_InitialCreate")]
+    [Migration("20261106200059_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -104,6 +104,14 @@ namespace Agroskalka.Migrations
                     b.Property<bool>("Tuesday")
                         .HasColumnType("boolean")
                         .HasColumnName("tuesday");
+
+                    b.Property<DateTime>("ValidFrom")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("valid_from");
+
+                    b.Property<DateTime>("ValidTo")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("valid_to");
 
                     b.Property<bool>("Wednesday")
                         .HasColumnType("boolean")

@@ -27,6 +27,8 @@
                         <th class="px-6 py-4 text-sm font-semibold text-slate-900">Ważny do</th>
                         <th class="px-6 py-4 text-sm font-semibold text-slate-900">Dziecko</th>
                         <th class="px-6 py-4 text-sm font-semibold text-slate-900">Dorosły</th>
+                        <th class="px-6 py-4 text-sm font-semibold text-slate-900">Senior</th>
+                        <th class="px-6 py-4 text-sm font-semibold text-slate-900">Przejazd kolejką</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-200">
@@ -54,6 +56,8 @@
                             <td class="px-6 py-4 text-sm text-slate-600">@(item.ValidTo == DateTime.MaxValue ? "Bezterminowo" : item.ValidTo.ToString("dd.MM.yyyy"))</td>
                             <td class="px-6 py-4 text-sm text-slate-900 font-bold">@item.KidPrice.ToString("C")</td>
                             <td class="px-6 py-4 text-sm text-slate-900 font-bold">@item.AdultPrice.ToString("C")</td>
+                            <td class="px-6 py-4 text-sm text-slate-900 font-bold">@item.SeniorPrice.ToString("C")</td>
+                            <td class="px-6 py-4 text-sm text-slate-900 font-bold">@item.TrainPrice.ToString("C")</td>
                         </tr>
                     }
                 </tbody>

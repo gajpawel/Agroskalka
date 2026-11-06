@@ -1,0 +1,90 @@
+﻿@page
+@model Agroskalka.Pages.Admin.Schedules.CreateModel
+@{
+    ViewData["Title"] = "Ustal godziny otwarcia";
+    
+    // Tłumaczenia i kolejność dni (C# zaczyna tydzień od niedzieli (0), chcemy od poniedziałku)
+    var daysOrder = new[] 
+    { 
+        (DayOfWeek.Monday, "Poniedziałek"), (DayOfWeek.Tuesday, "Wtorek"), 
+        (DayOfWeek.Wednesday, "Środa"), (DayOfWeek.Thursday, "Czwartek"), 
+        (DayOfWeek.Friday, "Piątek"), (DayOfWeek.Saturday, "Sobota"), 
+        (DayOfWeek.Sunday, "Niedziela") 
+    };
+}
+
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 mt-8 sm:mt-12">
+    <div class="mb-8">
+        <a asp-page="/Admin/Index" class="text-sm font-medium text-emerald-600 hover:text-emerald-500">&larr; Wróć do panelu</a>
+        <h1 class="mt-4 text-3xl font-extrabold text-slate-900">Harmonogram otwarcia</h1>
+        <p class="mt-1 text-slate-500">Ustal godziny otwarcia parku na poszczególne dni tygodnia.</p>
+    </div>
+
+    <form method="post" class="bg-white p-6 sm:p-8 rounded-2xl shadow-sm border border-slate-200 space-y-8">
+        
+        <div>
+            <label asp-for="ValidFrom" class="block text-sm font-semibold text-slate-900 mb-2">Wejście w życie od dnia:</label>
+            <input asp-for="ValidFrom" type="date" class="block w-full max-w-sm rounded-lg border-slate-300 py-2.5 px-3 border shadow-sm focus:border-emerald-500 focus:ring-emerald-500 sm:text-sm outline-none" required />
+        </div>
+
+        <div class="space-y-4">
+            <h2 class="text-lg font-semibold text-slate-800 border-b border-slate-100 pb-2">Konfiguracja dni tygodnia</h2>
+            
+            @foreach (var (dayEnum, plName) in daysOrder)
+            {
+                <div class="flex flex-col sm:flex-row sm:items-center p-4 bg-slate-50 rounded-xl border border-slate-100 gap-4 transition-opacity" id="row_@dayEnum">
+                    
+                    <!-- Checkbox Otwarty/Zamknięty -->
+                    <div class="w-40 flex items-center gap-3">
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" asp-for="Days[dayEnum].IsOpen" class="sr-only peer toggle-day" data-target="times_@dayEnum" onchange="toggleDay('@dayEnum')">
+                            <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
+                        </label>
+                        <span class="font-medium text-slate-700">@plName</span>
+                    </div>
+
+                    <!-- Inputy godzin -->
+                    <div id="times_@dayEnum" class="flex flex-wrap items-center gap-3 w-full @(!Model.Days[dayEnum].IsOpen ? "hidden" : "")">
+                        <div class="flex items-center gap-2">
+                            <span class="text-sm text-slate-500">od</span>
+                            <input asp-for="Days[dayEnum].OpenTime" type="time" class="rounded-lg border-slate-300 py-2 px-3 border shadow-sm focus:border-emerald-500 focus:ring-emerald-500 sm:text-sm outline-none w-28" />
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="text-sm text-slate-500">do</span>
+                            <input asp-for="Days[dayEnum].CloseTime" type="time" class="rounded-lg border-slate-300 py-2 px-3 border shadow-sm focus:border-emerald-500 focus:ring-emerald-500 sm:text-sm outline-none w-28" />
+                        </div>
+                    </div>
+
+                    <!-- Etykieta ZAMKNIĘTE -->
+                    <div id="closed_lbl_@dayEnum" class="text-slate-400 font-medium text-sm italic @(Model.Days[dayEnum].IsOpen ? "hidden" : "")">
+                        Park zamknięty
+                    </div>
+                </div>
+            }
+        </div>
+
+        <div class="pt-4 flex justify-end gap-3 border-t border-slate-100">
+            <a asp-page="/Admin/Index" class="px-5 py-2.5 rounded-lg border border-slate-300 text-slate-700 font-medium hover:bg-slate-50 transition-colors">Anuluj</a>
+            <button type="submit" class="px-6 py-2.5 rounded-lg bg-emerald-600 text-white font-bold hover:bg-emerald-700 shadow-sm transition-colors">Zapisz harmonogram</button>
+        </div>
+    </form>
+</div>
+
+<script>
+    function toggleDay(dayEnum) {
+        const isOpen = document.querySelector(`input[name="Days[${dayEnum}].IsOpen"]`).checked;
+        const timesDiv = document.getElementById(`times_${dayEnum}`);
+        const closedLbl = document.getElementById(`closed_lbl_${dayEnum}`);
+        const row = document.getElementById(`row_${dayEnum}`);
+
+        if (isOpen) {
+            timesDiv.classList.remove('hidden');
+            closedLbl.classList.add('hidden');
+            row.classList.remove('opacity-60');
+        } else {
+            timesDiv.classList.add('hidden');
+            closedLbl.classList.remove('hidden');
+            row.classList.add('opacity-60');
+        }
+    }
+</script>

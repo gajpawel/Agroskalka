@@ -102,6 +102,14 @@ namespace Agroskalka.Migrations
                         .HasColumnType("boolean")
                         .HasColumnName("tuesday");
 
+                    b.Property<DateTime>("ValidFrom")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("valid_from");
+
+                    b.Property<DateTime>("ValidTo")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("valid_to");
+
                     b.Property<bool>("Wednesday")
                         .HasColumnType("boolean")
                         .HasColumnName("wednesday");

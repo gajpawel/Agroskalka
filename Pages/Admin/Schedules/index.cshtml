@@ -1,0 +1,84 @@
+﻿@page
+@model Agroskalka.Pages.Admin.Schedules.IndexModel
+@{
+    ViewData["Title"] = "Historia Harmonogramów";
+}
+
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8 sm:mt-12">
+    <div class="sm:flex sm:items-center sm:justify-between mb-8">
+        <div>
+            <h1 class="text-3xl font-extrabold text-slate-900">Historia Harmonogramów</h1>
+            <p class="mt-2 text-sm text-slate-600">Zarządzaj godzinami otwarcia parku w różnych okresach roku.</p>
+        </div>
+        <div class="mt-4 sm:mt-0">
+            <a asp-page="./Create" class="inline-flex items-center justify-center rounded-xl bg-emerald-600 px-5 py-3 text-sm font-semibold text-white shadow-sm hover:bg-emerald-700 transition-colors">
+                + Ustal nowe godziny
+            </a>
+        </div>
+    </div>
+
+    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-slate-200 text-left">
+                <thead class="bg-slate-50">
+                    <tr>
+                        <th class="px-6 py-4 text-sm font-semibold text-slate-900">Status</th>
+                        <th class="px-6 py-4 text-sm font-semibold text-slate-900">Ważny od</th>
+                        <th class="px-6 py-4 text-sm font-semibold text-slate-900">Ważny do</th>
+                        <th class="px-6 py-4 text-sm font-semibold text-slate-900">Godziny i dni</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-200">
+                    @foreach (var group in Model.ScheduleGroups)
+                    {
+                        bool isCurrentlyActive = group.ValidFrom <= DateTime.UtcNow && group.ValidTo >= DateTime.UtcNow;
+
+                        <tr class="hover:bg-slate-50 transition-colors">
+                            <td class="px-6 py-4 align-top">
+                                @if (isCurrentlyActive)
+                                {
+                                    <span class="inline-flex items-center rounded-full bg-green-50 px-2 py-1 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/20">Aktywny</span>
+                                }
+                                else if (group.ValidFrom > DateTime.UtcNow)
+                                {
+                                    <span class="inline-flex items-center rounded-full bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-600/20">Zaplanowany</span>
+                                }
+                                else
+                                {
+                                    <span class="inline-flex items-center rounded-full bg-slate-100 px-2 py-1 text-xs font-medium text-slate-600 ring-1 ring-inset ring-slate-500/10">Archiwalny</span>
+                                }
+                            </td>
+                            <td class="px-6 py-4 text-sm text-slate-600 font-medium align-top">@group.ValidFrom.ToString("dd.MM.yyyy")</td>
+                            <td class="px-6 py-4 text-sm text-slate-600 align-top">
+                                @(group.ValidTo >= DateTime.SpecifyKind(DateTime.MaxValue.AddDays(-1), DateTimeKind.Utc) ? "Bezterminowo" : group.ValidTo.ToString("dd.MM.yyyy"))
+                            </td>
+                            <td class="px-6 py-4 text-sm text-slate-600 align-top">
+                                <div class="space-y-2">
+                                    @foreach (var config in group.Configs)
+                                    {
+                                        var days = new List<string>();
+                                        if (config.Monday) days.Add("Pon");
+                                        if (config.Tuesday) days.Add("Wt");
+                                        if (config.Wednesday) days.Add("Śr");
+                                        if (config.Thursday) days.Add("Czw");
+                                        if (config.Friday) days.Add("Pt");
+                                        if (config.Saturday) days.Add("Sob");
+                                        if (config.Sunday) days.Add("Ndz");
+
+                                        if (days.Any())
+                                        {
+                                            <div class="flex gap-2">
+                                                <span class="font-medium text-slate-900 w-32">@string.Join(", ", days)</span>
+                                                <span>@config.OpenTime.ToString("HH:mm") - @config.CloseTime.ToString("HH:mm")</span>
+                                            </div>
+                                        }
+                                    }
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

@@ -8,7 +8,7 @@
 <div class="max-w-4xl mx-auto mt-12 px-4 sm:px-6 lg:px-8">
     <h2 class="text-3xl font-bold text-center text-slate-800 mb-8">Godziny otwarcia</h2>
 
-    @if (Model.Schedule == null)
+    @if (!Model.ActiveSchedules.Any())
     {
         <div class="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-md">
             <p class="text-center text-blue-700 font-medium m-0">
@@ -27,55 +27,48 @@
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-200">
-                    @if (Model.Schedule.Monday)
-                    {
-                        <tr class="hover:bg-slate-50 transition-colors">
-                            <td class="py-4 px-6 text-slate-600 font-medium">Poniedziałek</td>
-                            <td class="py-4 px-6 text-slate-900 font-bold">@Model.Schedule.OpenTime - @Model.Schedule.CloseTime</td>
-                        </tr>
-                    }
-                    @if (Model.Schedule.Tuesday)
-                    {
-                        <tr class="hover:bg-slate-50 transition-colors">
-                            <td class="py-4 px-6 text-slate-600 font-medium">Wtorek</td>
-                            <td class="py-4 px-6 text-slate-900 font-bold">@Model.Schedule.OpenTime - @Model.Schedule.CloseTime</td>
-                        </tr>
-                    }
-                    @if (Model.Schedule.Wednesday)
-                    {
-                        <tr class="hover:bg-slate-50 transition-colors">
-                            <td class="py-4 px-6 text-slate-600 font-medium">Środa</td>
-                            <td class="py-4 px-6 text-slate-900 font-bold">@Model.Schedule.OpenTime - @Model.Schedule.CloseTime</td>
-                        </tr>
-                    }
-                    @if (Model.Schedule.Thursday)
-                    {
-                        <tr class="hover:bg-slate-50 transition-colors">
-                            <td class="py-4 px-6 text-slate-600 font-medium">Czwartek</td>
-                            <td class="py-4 px-6 text-slate-900 font-bold">@Model.Schedule.OpenTime - @Model.Schedule.CloseTime</td>
-                        </tr>
-                    }
-                    @if (Model.Schedule.Friday)
-                    {
-                        <tr class="hover:bg-slate-50 transition-colors">
-                            <td class="py-4 px-6 text-slate-600 font-medium">Piątek</td>
-                            <td class="py-4 px-6 text-slate-900 font-bold">@Model.Schedule.OpenTime - @Model.Schedule.CloseTime</td>
-                        </tr>
-                    }
-                    @if (Model.Schedule.Saturday)
-                    {
-                        <tr class="hover:bg-slate-50 transition-colors">
-                            <td class="py-4 px-6 text-slate-600 font-medium">Sobota</td>
-                            <td class="py-4 px-6 text-slate-900 font-bold">@Model.Schedule.OpenTime - @Model.Schedule.CloseTime</td>
-                        </tr>
-                    }
-                    @if (Model.Schedule.Sunday)
-                    {
-                        <tr class="hover:bg-slate-50 transition-colors">
-                            <td class="py-4 px-6 text-slate-600 font-medium">Niedziela</td>
-                            <td class="py-4 px-6 text-slate-900 font-bold">@Model.Schedule.OpenTime - @Model.Schedule.CloseTime</td>
-                        </tr>
-                    }
+                    <tr class="hover:bg-slate-50 transition-colors">
+                        <td class="py-4 px-6 text-slate-600 font-medium">Poniedziałek</td>
+                        <td class="py-4 px-6 @(Model.GetHoursForDay(s => s.Monday) == "Zamknięte" ? "text-slate-400 italic" : "text-slate-900 font-bold")">
+                            @Model.GetHoursForDay(s => s.Monday)
+                        </td>
+                    </tr>
+                    <tr class="hover:bg-slate-50 transition-colors">
+                        <td class="py-4 px-6 text-slate-600 font-medium">Wtorek</td>
+                        <td class="py-4 px-6 @(Model.GetHoursForDay(s => s.Tuesday) == "Zamknięte" ? "text-slate-400 italic" : "text-slate-900 font-bold")">
+                            @Model.GetHoursForDay(s => s.Tuesday)
+                        </td>
+                    </tr>
+                    <tr class="hover:bg-slate-50 transition-colors">
+                        <td class="py-4 px-6 text-slate-600 font-medium">Środa</td>
+                        <td class="py-4 px-6 @(Model.GetHoursForDay(s => s.Wednesday) == "Zamknięte" ? "text-slate-400 italic" : "text-slate-900 font-bold")">
+                            @Model.GetHoursForDay(s => s.Wednesday)
+                        </td>
+                    </tr>
+                    <tr class="hover:bg-slate-50 transition-colors">
+                        <td class="py-4 px-6 text-slate-600 font-medium">Czwartek</td>
+                        <td class="py-4 px-6 @(Model.GetHoursForDay(s => s.Thursday) == "Zamknięte" ? "text-slate-400 italic" : "text-slate-900 font-bold")">
+                            @Model.GetHoursForDay(s => s.Thursday)
+                        </td>
+                    </tr>
+                    <tr class="hover:bg-slate-50 transition-colors">
+                        <td class="py-4 px-6 text-slate-600 font-medium">Piątek</td>
+                        <td class="py-4 px-6 @(Model.GetHoursForDay(s => s.Friday) == "Zamknięte" ? "text-slate-400 italic" : "text-slate-900 font-bold")">
+                            @Model.GetHoursForDay(s => s.Friday)
+                        </td>
+                    </tr>
+                    <tr class="hover:bg-slate-50 transition-colors">
+                        <td class="py-4 px-6 text-slate-600 font-medium">Sobota</td>
+                        <td class="py-4 px-6 @(Model.GetHoursForDay(s => s.Saturday) == "Zamknięte" ? "text-slate-400 italic" : "text-slate-900 font-bold")">
+                            @Model.GetHoursForDay(s => s.Saturday)
+                        </td>
+                    </tr>
+                    <tr class="hover:bg-slate-50 transition-colors">
+                        <td class="py-4 px-6 text-slate-600 font-medium">Niedziela</td>
+                        <td class="py-4 px-6 @(Model.GetHoursForDay(s => s.Sunday) == "Zamknięte" ? "text-slate-400 italic" : "text-slate-900 font-bold")">
+                            @Model.GetHoursForDay(s => s.Sunday)
+                        </td>
+                    </tr>
                 </tbody>
             </table>
         </div>

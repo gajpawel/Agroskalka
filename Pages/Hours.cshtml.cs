@@ -14,10 +14,24 @@ public class HoursModel : PageModel
         _context = context;
     }
 
-    public Schedule? Schedule { get; set; }
+    public List<Schedule> ActiveSchedules { get; set; } = new();
 
     public async Task OnGetAsync()
     {
-        Schedule = await _context.Schedules.FirstOrDefaultAsync();
+        var now = DateTime.UtcNow;
+        
+        ActiveSchedules = await _context.Schedules
+            .Where(s => s.ValidFrom <= now && s.ValidTo >= now)
+            .ToListAsync();
+    }
+    
+    public string GetHoursForDay(Func<Schedule, bool> daySelector)
+    {
+        var schedule = ActiveSchedules.FirstOrDefault(daySelector);
+        if (schedule != null)
+        {
+            return $"{schedule.OpenTime:HH:mm} - {schedule.CloseTime:HH:mm}";
+        }
+        return "Zamknięte";
     }
 }

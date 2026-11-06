@@ -3,6 +3,10 @@
 public class Schedule
 {
     public int Id { get; set; }
+    
+    public DateTime ValidFrom { get; set; }
+    public DateTime ValidTo { get; set; }
+    
     public TimeOnly OpenTime { get; set; }
     public TimeOnly CloseTime { get; set; }
 

@@ -64,6 +64,8 @@ namespace Agroskalka.Migrations
                 {
                     id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    valid_from = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    valid_to = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     open_time = table.Column<TimeOnly>(type: "time without time zone", nullable: false),
                     close_time = table.Column<TimeOnly>(type: "time without time zone", nullable: false),
                     monday = table.Column<bool>(type: "boolean", nullable: false),
