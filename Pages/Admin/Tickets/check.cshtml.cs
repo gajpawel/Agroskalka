@@ -43,8 +43,6 @@ namespace Agroskalka.Pages.Admin.Tickets
                 return Page();
             }
 
-            // Szukamy biletu w bazie, od razu "dołączając" użytkownika, aby znać właściciela.
-            // Zmień 't.User', jeśli w Twoim pliku Ticket.cs relacja do AspNetUsers nazywa się inaczej.
             ScannedTicket = await _context.Tickets
                 .Include(t => t.User) 
                 .FirstOrDefaultAsync(t => t.Code == Code);
@@ -56,24 +54,37 @@ namespace Agroskalka.Pages.Admin.Tickets
                 return Page();
             }
 
-            // Sprawdzamy, czy bilet nie został już skasowany
+            // 1. Tworzymy "koszyk" na błędy
+            var errors = new List<string>();
+
+            // 2. Wykonujemy wszystkie testy po kolei, nie przerywając działania
             if (ScannedTicket.IsChecked)
             {
-                StatusMessage = "UWAGA! Ten bilet został już wykorzystany!";
-                IsError = true;
+                errors.Add("UWAGA! Ten bilet został już wykorzystany!");
                 IsAlreadyChecked = true;
-                return Page();
             }
 
-            // (Opcjonalnie) Możemy też ostrzegać, jeśli bilet jest nieopłacony
             if (!ScannedTicket.IsPaid)
             {
-                StatusMessage = "UWAGA! Ten bilet istnieje, ale NIE ZOSTAŁ OPŁACONY!";
+                errors.Add("UWAGA! Ten bilet NIE ZOSTAŁ OPŁACONY!");
+            }
+
+            var dzisiaj = DateOnly.FromDateTime(DateTime.Today);
+            if (ScannedTicket.Date != dzisiaj)
+            {
+                errors.Add($"BŁĄD: Bilet jest wystawiony na inny dzień ({ScannedTicket.Date:dd.MM.yyyy})!");
+            }
+
+            // 3. Jeśli zebraliśmy jakiekolwiek błędy, wyświetlamy je wszystkie na raz
+            if (errors.Any())
+            {
                 IsError = true;
+                // Łączymy wszystkie błędy używając tagu nowej linii <br/>
+                StatusMessage = string.Join("<br/><br/>", errors); 
                 return Page();
             }
 
-            // Jeśli wszystkie testy minęły pomyślnie, "kasujemy" bilet
+            // 4. Jeśli lista błędów jest pusta, kasujemy bilet
             ScannedTicket.IsChecked = true;
             await _context.SaveChangesAsync();
 
