@@ -74,7 +74,7 @@ Aby widzieć zmiany w kodzie C# (Hot Reload) oraz zmiany w stylach Tailwind CSS 
 
 **Terminal 1 (Kompilacja Tailwind CSS w tle):**
 ```shell
-npx @tailwindcss/cli -o ./wwwroot/css/site.css --watch
+npx @tailwindcss/cli -i ./wwwroot/css/app.css  -o ./wwwroot/css/site.css --watch
 ```
 
 **Terminal 2 (Uruchomienie serwera .NET z Hot Reload):**
