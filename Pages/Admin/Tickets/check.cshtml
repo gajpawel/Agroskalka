@@ -13,21 +13,38 @@
     <!-- 1. Formularz wpisywania kodu / skaner -->
     <div class="bg-white p-6 sm:p-8 rounded-2xl shadow-sm border border-slate-200 mb-8">
         
-        <!-- Sekcja skanera (domyślnie ukryta) -->
-        <div id="scanner-container" class="hidden mb-6">
-            <div class="bg-slate-900 rounded-xl overflow-hidden shadow-inner relative">
-                <button type="button" onclick="stopScanner()" class="absolute top-2 right-2 z-10 bg-white/20 hover:bg-white/40 text-white rounded-full p-2 backdrop-blur-sm transition-colors">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
-                </button>
+        <!-- Własny, ładny interfejs skanera (domyślnie ukryty) -->
+        <div id="scanner-ui" class="hidden mb-8 bg-slate-50 p-4 sm:p-6 rounded-xl border border-slate-200">
+            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-4">
+                <div class="w-full sm:w-auto flex-1">
+                    <label class="block text-sm font-medium text-slate-700 mb-1">Wybierz aparat:</label>
+                    <select id="camera-select" class="block w-full rounded-lg border-slate-300 py-2 px-3 border shadow-sm focus:border-emerald-500 focus:ring-emerald-500 sm:text-sm outline-none bg-white">
+                        <option value="">Ładowanie kamer...</option>
+                    </select>
+                </div>
+                <div class="flex gap-2 w-full sm:w-auto self-end">
+                    <button type="button" id="start-btn" onclick="startScanning()" class="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2 px-4 rounded-lg shadow-sm transition-colors text-sm">
+                        Uruchom kamerę
+                    </button>
+                    <button type="button" id="stop-btn" onclick="stopScanning()" class="hidden w-full sm:w-auto bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded-lg shadow-sm transition-colors text-sm">
+                        Zatrzymaj
+                    </button>
+                    <button type="button" onclick="closeScannerUI()" class="w-full sm:w-auto bg-slate-200 hover:bg-slate-300 text-slate-800 font-semibold py-2 px-4 rounded-lg transition-colors text-sm">
+                        Zamknij
+                    </button>
+                </div>
+            </div>
+
+            <!-- Tutaj biblioteka wrzuci sam czysty obraz z kamery -->
+            <div class="bg-black rounded-xl overflow-hidden shadow-inner w-full max-w-sm mx-auto relative">
                 <div id="reader" class="w-full"></div>
             </div>
-            <p class="text-center text-sm text-slate-500 mt-2">Nakieruj aparat na kod QR klienta</p>
         </div>
 
         <form id="checkForm" method="post">
             <div class="flex items-center justify-between mb-2">
                 <label asp-for="Code" class="block text-sm font-semibold text-slate-700">Wpisz kod lub użyj aparatu</label>
-                <button type="button" onclick="startScanner()" id="startScanBtn" class="text-sm text-emerald-600 hover:text-emerald-700 font-bold flex items-center gap-1">
+                <button type="button" onclick="initScanner()" id="startScanBtn" class="text-sm text-emerald-600 hover:text-emerald-700 font-bold flex items-center gap-1">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clip-rule="evenodd" /></svg>
                     Włącz skaner QR
                 </button>
@@ -104,53 +121,95 @@
 
 <!-- Skrypt sterujący skanerem -->
 <script>
-    let html5QrcodeScanner = null;
+    let html5QrCode;
 
-    function startScanner() {
-        // Pokazujemy kontener z kamerą i ukrywamy przycisk "Włącz skaner"
-        document.getElementById('scanner-container').classList.remove('hidden');
+    // 1. Pobiera listę kamer i buduje ładnego dropdowna
+    async function initScanner() {
+        document.getElementById('scanner-ui').classList.remove('hidden');
         document.getElementById('startScanBtn').classList.add('hidden');
 
-        // Inicjalizacja skanera
-        html5QrcodeScanner = new Html5QrcodeScanner(
-            "reader", 
-            { 
-                fps: 10, 
-                qrbox: { width: 250, height: 250 },
-                aspectRatio: 1.0,
-                supportedScanTypes: [Html5QrcodeScanType.SCAN_TYPE_CAMERA]
-            }, 
-            false
-        );
-
-        html5QrcodeScanner.render(onScanSuccess, onScanFailure);
-    }
-
-    function stopScanner() {
-        if (html5QrcodeScanner) {
-            html5QrcodeScanner.clear().then(() => {
-                document.getElementById('scanner-container').classList.add('hidden');
-                document.getElementById('startScanBtn').classList.remove('hidden');
-            });
+        try {
+            const cameras = await Html5Qrcode.getCameras();
+            if (cameras && cameras.length > 0) {
+                const select = document.getElementById('camera-select');
+                select.innerHTML = ''; // czyszczenie placeholder'a
+                
+                cameras.forEach(camera => {
+                    const option = document.createElement('option');
+                    option.value = camera.id;
+                    // Jeśli system nie udostępni nazwy, nazywamy je Kamera 1, 2 itd.
+                    option.text = camera.label || `Kamera ${select.length + 1}`;
+                    select.appendChild(option);
+                });
+            } else {
+                alert("Nie znaleziono żadnej kamery w urządzeniu.");
+            }
+        } catch (err) {
+            console.error("Błąd pobierania kamer:", err);
+            alert("Brak dostępu do kamery. Upewnij się, że zaakceptowałeś uprawnienia.");
         }
     }
 
-    function onScanSuccess(decodedText, decodedResult) {
-        // 1. Zatrzymujemy skaner po pomyślnym odczycie
-        stopScanner();
+    // 2. Uruchamia wybraną kamerę
+    function startScanning() {
+        const cameraId = document.getElementById('camera-select').value;
+        if (!cameraId) return;
 
-        // 2. Wpisujemy odczytany kod do naszego pola tekstowego
-        document.getElementById('CodeInput').value = decodedText;
+        if (!html5QrCode) {
+            html5QrCode = new Html5Qrcode("reader");
+        }
 
-        // 3. Automatycznie wysyłamy formularz do serwera C#
-        document.getElementById('checkForm').submit();
+        // Zmiana przycisków
+        document.getElementById('start-btn').classList.add('hidden');
+        document.getElementById('stop-btn').classList.remove('hidden');
+        document.getElementById('camera-select').disabled = true;
+
+        html5QrCode.start(
+            cameraId,
+            { 
+                fps: 10, 
+                qrbox: { width: 250, height: 250 },
+                aspectRatio: 1.0 
+            },
+            (decodedText) => {
+                // Sukces: stopujemy kamerę, wpisujemy kod i wysyłamy formularz
+                stopScanning();
+                document.getElementById('CodeInput').value = decodedText;
+                document.getElementById('checkForm').submit();
+            },
+            (errorMessage) => {
+                // Ignorujemy błędy odczytu pojedynczych klatek
+            }
+        ).catch(err => {
+            console.error(err);
+            alert("Nie udało się uruchomić wybranej kamery.");
+            stopScanning();
+        });
     }
 
-    function onScanFailure(error) {
-        // Skaner na bieżąco analizuje klatki obrazu, większość klatek nie zawiera kodu,
-        // więc błędy odczytu po prostu ignorujemy, aż do skutku.
+    // 3. Zatrzymuje tylko obraz (skaner dalej jest widoczny)
+    function stopScanning() {
+        if (html5QrCode && html5QrCode.isScanning) {
+            html5QrCode.stop().then(() => {
+                document.getElementById('start-btn').classList.remove('hidden');
+                document.getElementById('stop-btn').classList.add('hidden');
+                document.getElementById('camera-select').disabled = false;
+            }).catch(err => console.error(err));
+        }
+    }
+
+    // 4. Całkowicie zamyka panel skanera
+    function closeScannerUI() {
+        stopScanning();
+        document.getElementById('scanner-ui').classList.add('hidden');
+        document.getElementById('startScanBtn').classList.remove('hidden');
     }
 </script>
+
+<style>
+    /* Ukrycie niepotrzebnego baneru reklamowego biblioteki, który czasem się pojawia */
+    #reader a { display: none !important; }
+</style>
 
 <style>
     /* Drobne poprawki estetyczne dla biblioteki skanera, żeby pasowała do Tailwinda */

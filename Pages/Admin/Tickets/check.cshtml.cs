@@ -24,6 +24,16 @@ namespace Agroskalka.Pages.Admin.Tickets
         public bool IsError { get; set; }
         public bool IsAlreadyChecked { get; set; }
 
+        public void OnGet(string code)
+        {
+            // Jeśli ktoś przekaże kod w linku url, 
+            // zostanie on automatycznie wpisany w pole tekstowe.
+            if (!string.IsNullOrEmpty(code))
+            {
+                Code = code;
+            }
+        }
+
         public async Task<IActionResult> OnPostAsync()
         {
             if (string.IsNullOrWhiteSpace(Code))
@@ -34,6 +44,7 @@ namespace Agroskalka.Pages.Admin.Tickets
             }
 
             // Szukamy biletu w bazie, od razu "dołączając" użytkownika, aby znać właściciela.
+            // Zmień 't.User', jeśli w Twoim pliku Ticket.cs relacja do AspNetUsers nazywa się inaczej.
             ScannedTicket = await _context.Tickets
                 .Include(t => t.User) 
                 .FirstOrDefaultAsync(t => t.Code == Code);
@@ -54,7 +65,7 @@ namespace Agroskalka.Pages.Admin.Tickets
                 return Page();
             }
 
-            //  Ostrzeżenie, jeśli bilet jest nieopłacony
+            // (Opcjonalnie) Możemy też ostrzegać, jeśli bilet jest nieopłacony
             if (!ScannedTicket.IsPaid)
             {
                 StatusMessage = "UWAGA! Ten bilet istnieje, ale NIE ZOSTAŁ OPŁACONY!";
