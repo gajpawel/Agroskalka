@@ -1,0 +1,176 @@
+﻿@page
+@model Agroskalka.Pages.Admin.Tickets.CheckModel
+@{
+    ViewData["Title"] = "Weryfikacja biletów";
+}
+
+<!-- Zaciągamy bibliotekę do obsługi aparatu i kodów QR -->
+<script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+
+<div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 mt-8 sm:mt-12">
+    <h1 class="text-3xl font-extrabold text-slate-900 mb-8 text-center">Bramka: Sprawdzanie biletów</h1>
+
+    <!-- 1. Formularz wpisywania kodu / skaner -->
+    <div class="bg-white p-6 sm:p-8 rounded-2xl shadow-sm border border-slate-200 mb-8">
+        
+        <!-- Sekcja skanera (domyślnie ukryta) -->
+        <div id="scanner-container" class="hidden mb-6">
+            <div class="bg-slate-900 rounded-xl overflow-hidden shadow-inner relative">
+                <button type="button" onclick="stopScanner()" class="absolute top-2 right-2 z-10 bg-white/20 hover:bg-white/40 text-white rounded-full p-2 backdrop-blur-sm transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                </button>
+                <div id="reader" class="w-full"></div>
+            </div>
+            <p class="text-center text-sm text-slate-500 mt-2">Nakieruj aparat na kod QR klienta</p>
+        </div>
+
+        <form id="checkForm" method="post">
+            <div class="flex items-center justify-between mb-2">
+                <label asp-for="Code" class="block text-sm font-semibold text-slate-700">Wpisz kod lub użyj aparatu</label>
+                <button type="button" onclick="startScanner()" id="startScanBtn" class="text-sm text-emerald-600 hover:text-emerald-700 font-bold flex items-center gap-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clip-rule="evenodd" /></svg>
+                    Włącz skaner QR
+                </button>
+            </div>
+            
+            <div class="flex flex-col sm:flex-row gap-4">
+                <input asp-for="Code" id="CodeInput" type="text" placeholder="np. ABC-123-XYZ" autofocus autocomplete="off"
+                       class="block w-full rounded-xl border-slate-300 py-3.5 px-4 border shadow-sm focus:border-emerald-500 focus:ring-emerald-500 sm:text-xl font-mono outline-none uppercase" />
+                
+                <button type="submit" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3.5 px-8 rounded-xl shadow-sm transition-colors text-lg whitespace-nowrap">
+                    Sprawdź bilet
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- 2. Wielki komunikat zwrotny (Status) -->
+    @if (!string.IsNullOrEmpty(Model.StatusMessage))
+    {
+        <div class="p-6 rounded-2xl shadow-sm mb-8 border-2 
+             @(Model.IsError ? (Model.IsAlreadyChecked ? "bg-amber-50 border-amber-300" : "bg-red-50 border-red-300") : "bg-emerald-50 border-emerald-400")">
+            
+            <h2 class="text-2xl sm:text-3xl font-black text-center 
+                @(Model.IsError ? (Model.IsAlreadyChecked ? "text-amber-700" : "text-red-700") : "text-emerald-700")">
+                @Model.StatusMessage
+            </h2>
+        </div>
+    }
+
+    <!-- 3. Wyświetlenie parametrów biletu -->
+    @if (Model.ScannedTicket != null)
+    {
+        <div class="bg-white p-6 sm:p-8 rounded-2xl shadow-sm border border-slate-200">
+            <h3 class="text-lg font-semibold text-slate-800 mb-6 border-b border-slate-100 pb-3">Szczegóły rezerwacji</h3>
+            
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <div>
+                    <p class="text-sm text-slate-500">Data wejścia</p>
+                    <p class="text-lg font-bold text-slate-900">@Model.ScannedTicket.Date.ToString("dd.MM.yyyy")</p>
+                </div>
+                <div>
+                    <p class="text-sm text-slate-500">Status płatności</p>
+                    @if(Model.ScannedTicket.IsPaid)
+                    {
+                        <span class="inline-flex items-center rounded-full bg-green-100 px-3 py-1 mt-1 text-sm font-semibold text-green-800">
+                            Opłacony (@Model.ScannedTicket.Price.ToString("C"))
+                        </span>
+                    }
+                    else
+                    {
+                        <span class="inline-flex items-center rounded-full bg-red-100 px-3 py-1 mt-1 text-sm font-semibold text-red-800">
+                            Nieopłacony (@Model.ScannedTicket.Price.ToString("C"))
+                        </span>
+                    }
+                </div>
+                <div class="sm:col-span-2">
+                    <p class="text-sm text-slate-500">Kupujący</p>
+                    <p class="font-medium text-slate-900">@(Model.ScannedTicket.User?.Email ?? "Konto usunięte / brak danych")</p>
+                </div>
+            </div>
+
+            <div class="mt-6 pt-6 border-t border-slate-100">
+                <p class="text-sm text-slate-500 mb-3">Liczba osób do wpuszczenia:</p>
+                <div class="flex flex-wrap gap-3">
+                    @if(Model.ScannedTicket.AdultsNumber > 0) { <span class="bg-slate-100 border border-slate-200 px-4 py-2 rounded-xl text-slate-800 font-bold">Dorośli: @Model.ScannedTicket.AdultsNumber</span> }
+                    @if(Model.ScannedTicket.KidsNumber > 0) { <span class="bg-slate-100 border border-slate-200 px-4 py-2 rounded-xl text-slate-800 font-bold">Dzieci: @Model.ScannedTicket.KidsNumber</span> }
+                    @if(Model.ScannedTicket.SeniorsNumber > 0) { <span class="bg-slate-100 border border-slate-200 px-4 py-2 rounded-xl text-slate-800 font-bold">Seniorzy: @Model.ScannedTicket.SeniorsNumber</span> }
+                    @if(Model.ScannedTicket.BabiesNumber > 0) { <span class="bg-slate-100 border border-slate-200 px-4 py-2 rounded-xl text-slate-800 font-bold">Maluchy: @Model.ScannedTicket.BabiesNumber</span> }
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+<!-- Skrypt sterujący skanerem -->
+<script>
+    let html5QrcodeScanner = null;
+
+    function startScanner() {
+        // Pokazujemy kontener z kamerą i ukrywamy przycisk "Włącz skaner"
+        document.getElementById('scanner-container').classList.remove('hidden');
+        document.getElementById('startScanBtn').classList.add('hidden');
+
+        // Inicjalizacja skanera
+        html5QrcodeScanner = new Html5QrcodeScanner(
+            "reader", 
+            { 
+                fps: 10, 
+                qrbox: { width: 250, height: 250 },
+                aspectRatio: 1.0,
+                supportedScanTypes: [Html5QrcodeScanType.SCAN_TYPE_CAMERA]
+            }, 
+            false
+        );
+
+        html5QrcodeScanner.render(onScanSuccess, onScanFailure);
+    }
+
+    function stopScanner() {
+        if (html5QrcodeScanner) {
+            html5QrcodeScanner.clear().then(() => {
+                document.getElementById('scanner-container').classList.add('hidden');
+                document.getElementById('startScanBtn').classList.remove('hidden');
+            });
+        }
+    }
+
+    function onScanSuccess(decodedText, decodedResult) {
+        // 1. Zatrzymujemy skaner po pomyślnym odczycie
+        stopScanner();
+
+        // 2. Wpisujemy odczytany kod do naszego pola tekstowego
+        document.getElementById('CodeInput').value = decodedText;
+
+        // 3. Automatycznie wysyłamy formularz do serwera C#
+        document.getElementById('checkForm').submit();
+    }
+
+    function onScanFailure(error) {
+        // Skaner na bieżąco analizuje klatki obrazu, większość klatek nie zawiera kodu,
+        // więc błędy odczytu po prostu ignorujemy, aż do skutku.
+    }
+</script>
+
+<style>
+    /* Drobne poprawki estetyczne dla biblioteki skanera, żeby pasowała do Tailwinda */
+    #reader { border: none !important; }
+    #reader__dashboard_section_csr button {
+        background-color: #059669 !important; /* emerald-600 */
+        color: white !important;
+        border: none !important;
+        border-radius: 0.5rem !important;
+        padding: 0.5rem 1rem !important;
+        cursor: pointer;
+        margin-top: 10px;
+    }
+    #reader__dashboard_section_csr select {
+        padding: 0.25rem;
+        border-radius: 0.25rem;
+        color: #334155;
+    }
+    #reader video {
+        border-radius: 0.75rem;
+        object-fit: cover;
+    }
+</style>
