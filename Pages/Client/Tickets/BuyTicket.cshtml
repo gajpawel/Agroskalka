@@ -1,0 +1,255 @@
+﻿@page
+@using System.Text.Json
+@model Agroskalka.Pages.Tickets.BuyTicketModel
+@{
+    ViewData["Title"] = "Kup bilet";
+
+    var tariffsJson = JsonSerializer.Serialize(Model.ActiveTariffs.Select(t => new
+    {
+        id = t.Id,
+        validFrom = t.ValidFrom.ToString("yyyy-MM-dd"),
+        validTo = t.ValidTo.ToString("yyyy-MM-dd"),
+        kidPrice = t.KidPrice,
+        adultPrice = t.AdultPrice,
+        seniorPrice = t.SeniorPrice
+    }));
+
+    var schedulesJson = JsonSerializer.Serialize(Model.ActiveSchedules.Select(s => new
+    {
+        validFrom = s.ValidFrom.ToString("yyyy-MM-dd"),
+        validTo = s.ValidTo.ToString("yyyy-MM-dd"),
+        days = new[] { s.Sunday, s.Monday, s.Tuesday, s.Wednesday, s.Thursday, s.Friday, s.Saturday }
+    }));
+}
+
+<div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 mt-8 sm:mt-12 mb-16">
+    <!-- Nagłówek -->
+    <div class="mb-8">
+        <a asp-page="/Client" class="text-sm font-medium text-blue-600 hover:text-blue-500">&larr; Wróć do panelu klienta</a>
+        <h1 class="mt-4 text-3xl font-extrabold text-slate-900">Kup bilet wstępu</h1>
+        <p class="mt-1 text-sm text-slate-500">Bilet jest ważny przez cały dzień od momentu otwarcia parku.</p>
+    </div>
+
+    <form method="post" id="ticketForm" class="bg-white p-6 sm:p-8 rounded-2xl shadow-sm border border-slate-200 space-y-8">
+
+        <!-- Błędy walidacji po stronie serwera -->
+        <div asp-validation-summary="ModelOnly" class="p-4 rounded-xl bg-red-50 border border-red-200 text-sm text-red-700 font-medium"></div>
+
+        <!-- Sekcja 1: Wybór daty -->
+        <div>
+            <h2 class="text-lg font-semibold text-slate-800 border-b border-slate-100 pb-2 mb-4">1. Termin wizyty</h2>
+            <div>
+                <label asp-for="SelectedDate" class="block text-sm font-medium text-slate-700 mb-1">Data wstępu do parku</label>
+                <input asp-for="SelectedDate" type="date" id="selectedDate"
+                       min="@DateTime.Today.ToString("yyyy-MM-dd")"
+                       class="block w-full max-w-md rounded-lg border-slate-300 py-2.5 px-3 border shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm outline-none" required />
+                <span asp-validation-for="SelectedDate" class="mt-1 block text-xs text-red-600"></span>
+
+                <!-- Alert o zamkniętym parku -->
+                <div id="parkClosedAlert" style="display: none;" class="mt-3 p-3.5 rounded-xl bg-red-50 border border-red-200 flex items-center gap-2.5 text-sm text-red-700 font-medium">
+                    <svg class="w-5 h-5 text-red-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span>W wybranym dniu park jest nieczynny. Wybierz inny termin.</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sekcja 2: Wybór liczby gości -->
+        <div>
+            <h2 class="text-lg font-semibold text-slate-800 border-b border-slate-100 pb-2 mb-4">2. Liczba osób</h2>
+
+            <div class="divide-y divide-slate-100">
+                <!-- Maluch < 90 cm -->
+                <div class="py-4 first:pt-0 flex items-center justify-between gap-4">
+                    <div>
+                        <p class="text-sm font-semibold text-slate-800">Dziecko poniżej 90 cm</p>
+                        <p class="text-xs text-slate-500 mt-0.5">Wstęp bezpłatny</p>
+                    </div>
+                    <div class="flex items-center gap-4">
+                        <span class="text-sm font-semibold text-emerald-600">0,00 zł</span>
+                        <div class="flex items-center">
+                            <button type="button" onclick="changeCount('babiesCount', -1)" class="w-9 h-9 rounded-l-lg border border-slate-300 bg-slate-50 text-slate-600 hover:bg-slate-100 font-bold transition-colors">-</button>
+                            <input asp-for="BabiesCount" type="number" id="babiesCount" min="0" value="0" readonly
+                                   class="guest-input w-12 h-9 border-y border-slate-300 text-center text-sm font-semibold text-slate-900 focus:outline-none" />
+                            <button type="button" onclick="changeCount('babiesCount', 1)" class="w-9 h-9 rounded-r-lg border border-slate-300 bg-slate-50 text-slate-600 hover:bg-slate-100 font-bold transition-colors">+</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Dziecko -->
+                <div class="py-4 flex items-center justify-between gap-4">
+                    <div>
+                        <p class="text-sm font-semibold text-slate-800">Dziecko</p>
+                        <p class="text-xs text-slate-500 mt-0.5">Powyżej 90 cm wzrostu</p>
+                    </div>
+                    <div class="flex items-center gap-4">
+                        <span id="kidPriceLabel" class="text-sm font-semibold text-slate-700">-</span>
+                        <div class="flex items-center">
+                            <button type="button" onclick="changeCount('kidsCount', -1)" class="w-9 h-9 rounded-l-lg border border-slate-300 bg-slate-50 text-slate-600 hover:bg-slate-100 font-bold transition-colors">-</button>
+                            <input asp-for="KidsCount" type="number" id="kidsCount" min="0" value="0" readonly
+                                   class="guest-input w-12 h-9 border-y border-slate-300 text-center text-sm font-semibold text-slate-900 focus:outline-none" />
+                            <button type="button" onclick="changeCount('kidsCount', 1)" class="w-9 h-9 rounded-r-lg border border-slate-300 bg-slate-50 text-slate-600 hover:bg-slate-100 font-bold transition-colors">+</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Dorosły -->
+                <div class="py-4 flex items-center justify-between gap-4">
+                    <div>
+                        <p class="text-sm font-semibold text-slate-800">Dorosły</p>
+                        <p class="text-xs text-slate-500 mt-0.5">Bilet normalny</p>
+                    </div>
+                    <div class="flex items-center gap-4">
+                        <span id="adultPriceLabel" class="text-sm font-semibold text-slate-700">-</span>
+                        <div class="flex items-center">
+                            <button type="button" onclick="changeCount('adultsCount', -1)" class="w-9 h-9 rounded-l-lg border border-slate-300 bg-slate-50 text-slate-600 hover:bg-slate-100 font-bold transition-colors">-</button>
+                            <input asp-for="AdultsCount" type="number" id="adultsCount" min="0" value="0" readonly
+                                   class="guest-input w-12 h-9 border-y border-slate-300 text-center text-sm font-semibold text-slate-900 focus:outline-none" />
+                            <button type="button" onclick="changeCount('adultsCount', 1)" class="w-9 h-9 rounded-r-lg border border-slate-300 bg-slate-50 text-slate-600 hover:bg-slate-100 font-bold transition-colors">+</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Senior -->
+                <div class="py-4 last:pb-0 flex items-center justify-between gap-4">
+                    <div>
+                        <p class="text-sm font-semibold text-slate-800">Senior</p>
+                        <p class="text-xs text-slate-500 mt-0.5">Powyżej 60 roku życia</p>
+                    </div>
+                    <div class="flex items-center gap-4">
+                        <span id="seniorPriceLabel" class="text-sm font-semibold text-slate-700">-</span>
+                        <div class="flex items-center">
+                            <button type="button" onclick="changeCount('seniorsCount', -1)" class="w-9 h-9 rounded-l-lg border border-slate-300 bg-slate-50 text-slate-600 hover:bg-slate-100 font-bold transition-colors">-</button>
+                            <input asp-for="SeniorsCount" type="number" id="seniorsCount" min="0" value="0" readonly
+                                   class="guest-input w-12 h-9 border-y border-slate-300 text-center text-sm font-semibold text-slate-900 focus:outline-none" />
+                            <button type="button" onclick="changeCount('seniorsCount', 1)" class="w-9 h-9 rounded-r-lg border border-slate-300 bg-slate-50 text-slate-600 hover:bg-slate-100 font-bold transition-colors">+</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Podsumowanie płatności -->
+        <div class="rounded-xl bg-slate-50 border border-slate-200 p-5 flex items-center justify-between">
+            <div>
+                <p class="text-sm font-medium text-slate-600">Suma do zapłaty</p>
+                <p class="text-xs text-slate-400 mt-0.5">Zawiera podatek VAT</p>
+            </div>
+            <div class="text-2xl font-extrabold text-slate-900">
+                <span id="totalPrice">0.00</span> <span class="text-base font-semibold text-slate-600">zł</span>
+            </div>
+        </div>
+
+        <!-- Przyciski akcji -->
+        <div class="pt-2 flex flex-col-reverse sm:flex-row justify-end gap-3">
+            <a asp-page="/Client" class="px-5 py-2.5 rounded-lg border border-slate-300 text-slate-700 text-center font-medium hover:bg-slate-50 transition-colors">
+                Anuluj
+            </a>
+            <button type="submit" id="submitBtn"
+                    class="px-8 py-2.5 rounded-lg bg-blue-600 text-white font-bold hover:bg-blue-700 disabled:bg-slate-300 disabled:cursor-not-allowed shadow-sm transition-colors">
+                Zapłać i wygeneruj bilet
+            </button>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <script>
+        window.addEventListener('pageshow', function (event) {
+            if (event.persisted || (window.performance && window.performance.navigation.type === 2)) {
+                window.location.reload();
+            }
+        });
+
+        const tariffs = @Html.Raw(tariffsJson);
+        const schedules = @Html.Raw(schedulesJson);
+
+        const dateInput = document.getElementById('selectedDate');
+        const submitBtn = document.getElementById('submitBtn');
+        const parkClosedAlert = document.getElementById('parkClosedAlert');
+
+        const kidsCount = document.getElementById('kidsCount');
+        const adultsCount = document.getElementById('adultsCount');
+        const seniorsCount = document.getElementById('seniorsCount');
+
+        const kidPriceLabel = document.getElementById('kidPriceLabel');
+        const adultPriceLabel = document.getElementById('adultPriceLabel');
+        const seniorPriceLabel = document.getElementById('seniorPriceLabel');
+        const totalPriceEl = document.getElementById('totalPrice');
+
+        function changeCount(inputId, delta) {
+            const input = document.getElementById(inputId);
+            const currentVal = parseInt(input.value) || 0;
+            const newVal = Math.max(0, currentVal + delta);
+            input.value = newVal;
+            updateFormState();
+        }
+
+        function isParkOpen(dateObj) {
+            const dayIndex = dateObj.getDay();
+            return schedules.some(s => {
+                const validFrom = new Date(s.validFrom);
+                const validTo = new Date(s.validTo);
+                validFrom.setHours(0, 0, 0, 0);
+                validTo.setHours(0, 0, 0, 0);
+                return dateObj >= validFrom && dateObj <= validTo && s.days[dayIndex] === true;
+            });
+        }
+
+        function updateFormState() {
+            if (!dateInput.value) return;
+
+            const selectedDate = new Date(dateInput.value);
+            selectedDate.setHours(0, 0, 0, 0);
+
+            const open = isParkOpen(selectedDate);
+
+            const currentTariff = tariffs.find(t => {
+                const validFrom = new Date(t.validFrom);
+                const validTo = new Date(t.validTo);
+                validFrom.setHours(0, 0, 0, 0);
+                validTo.setHours(0, 0, 0, 0);
+                return selectedDate >= validFrom && selectedDate <= validTo;
+            });
+
+            if (!open) {
+                parkClosedAlert.style.display = 'flex';
+                submitBtn.disabled = true;
+                kidPriceLabel.innerText = "-";
+                adultPriceLabel.innerText = "-";
+                seniorPriceLabel.innerText = "-";
+                totalPriceEl.innerText = "0.00";
+                return;
+            }
+
+            parkClosedAlert.style.display = 'none';
+
+            if (currentTariff) {
+                kidPriceLabel.innerText = currentTariff.kidPrice.toFixed(2).replace('.', ',') + " zł";
+                adultPriceLabel.innerText = currentTariff.adultPrice.toFixed(2).replace('.', ',') + " zł";
+                seniorPriceLabel.innerText = currentTariff.seniorPrice.toFixed(2).replace('.', ',') + " zł";
+
+                const kids = parseInt(kidsCount.value) || 0;
+                const adults = parseInt(adultsCount.value) || 0;
+                const seniors = parseInt(seniorsCount.value) || 0;
+
+                const total = (kids * currentTariff.kidPrice) +
+                              (adults * currentTariff.adultPrice) +
+                              (seniors * currentTariff.seniorPrice);
+
+                totalPriceEl.innerText = total.toFixed(2).replace('.', ',');
+                submitBtn.disabled = (kids + adults + seniors) <= 0;
+            } else {
+                kidPriceLabel.innerText = "Brak cennika";
+                adultPriceLabel.innerText = "Brak cennika";
+                seniorPriceLabel.innerText = "Brak cennika";
+                totalPriceEl.innerText = "0,00";
+                submitBtn.disabled = true;
+            }
+        }
+
+        dateInput.addEventListener('change', updateFormState);
+        updateFormState();
+    </script>
+}

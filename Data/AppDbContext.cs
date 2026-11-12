@@ -29,6 +29,10 @@ public class AppDbContext : IdentityDbContext<User, Role, int>
 
         modelBuilder.Entity<Ticket>()
             .Property(t => t.Price).HasPrecision(10, 2);
+        
+        modelBuilder.Entity<Ticket>()
+            .HasIndex(t => t.Code)
+            .IsUnique();
 
         // Relacja User -> Role - asp.net realizuje sam
 

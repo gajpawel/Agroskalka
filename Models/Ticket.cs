@@ -19,7 +19,6 @@ public class Ticket
     public bool HasDiscount { get; set; }
     public bool IsPaid { get; set; }
     public bool IsChecked { get; set; }
-    public bool IsActive { get; set; }
 
     public Tariff Tariff { get; set; } = null!;
     public User User { get; set; } = null!;

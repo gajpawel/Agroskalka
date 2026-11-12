@@ -34,7 +34,6 @@
 
   <ItemGroup>
     <Folder Include="Pages\Client\Account\" />
-    <Folder Include="Pages\Client\Tickets\" />
   </ItemGroup>
 
   <Target Name="TailwindCSS" BeforeTargets="Build">

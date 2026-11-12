@@ -25,6 +25,12 @@
                 <a asp-page="/Hours" class="border-2 border-purple-400 text-white hover:bg-purple-700 px-8 py-3 rounded-xl font-bold transition-colors text-lg">
                     Godziny otwarcia
                 </a>
+                @if(User.IsInRole("Client"))
+                {
+                    <a asp-page="/Client/Tickets/BuyTicket" class="bg-white text-purple-700 hover:bg-slate-50 px-8 py-3 rounded-xl font-bold shadow-sm transition-colors text-lg">
+                        Zarezerwuj bilet
+                    </a>
+                }
             </div>
         </div>
         

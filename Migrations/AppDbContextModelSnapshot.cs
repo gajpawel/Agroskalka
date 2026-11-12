@@ -17,7 +17,7 @@ namespace Agroskalka.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "8.0.33")
+                .HasAnnotation("ProductVersion", "8.0.34")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -201,10 +201,6 @@ namespace Agroskalka.Migrations
                         .HasColumnType("boolean")
                         .HasColumnName("has_discount");
 
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("boolean")
-                        .HasColumnName("is_active");
-
                     b.Property<bool>("IsChecked")
                         .HasColumnType("boolean")
                         .HasColumnName("is_checked");
@@ -236,6 +232,10 @@ namespace Agroskalka.Migrations
 
                     b.HasKey("Id")
                         .HasName("pk_tickets");
+
+                    b.HasIndex("Code")
+                        .IsUnique()
+                        .HasDatabaseName("ix_tickets_code");
 
                     b.HasIndex("TariffId")
                         .HasDatabaseName("ix_tickets_tariff_id");
