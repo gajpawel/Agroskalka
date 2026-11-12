@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - Agroskalka</title>
+    <title>@ViewData["Title"] - Agroskałka</title>
     
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/Agroskalka.styles.css" asp-append-version="true" />
@@ -31,6 +31,14 @@
                         <a class="text-blue-600 hover:text-blue-800 px-3 py-2 rounded-md font-bold transition-colors flex items-center gap-1" asp-area="" asp-page="/Admin/Index">
                             Panel Admina
                         </a>
+                    }
+
+                    <!-- Link widoczny tylko dla Klienta -->
+                    @if (User.IsInRole("Client"))
+                    {
+                            <a class="text-blue-600 hover:text-blue-800 px-3 py-2 rounded-md font-bold transition-colors flex items-center gap-1" asp-area="" asp-page="/Client/Index">
+                                Panel Klienta
+                            </a>
                     }
                 </nav>
 

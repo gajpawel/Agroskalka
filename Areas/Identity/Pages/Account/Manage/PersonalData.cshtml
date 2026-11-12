@@ -1,0 +1,27 @@
+﻿@page
+@model PersonalDataModel
+@{
+    Layout = "_Layout";
+    ViewData["Title"] = "Dane osobowe";
+    ViewData["ActivePage"] = "PersonalData";
+}
+
+<div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-200">
+    <h2 class="text-xl font-semibold text-slate-800 mb-2">@ViewData["Title"]</h2>
+    <p class="text-sm text-slate-600 mb-6">
+        Możesz pobrać kopię swoich danych albo trwale usunąć konto.
+    </p>
+
+    <div class="flex flex-col sm:flex-row gap-3">
+        <form id="download-data" asp-page="DownloadPersonalData" method="post" class="flex-1">
+            <button type="submit"
+                    class="w-full py-3 px-4 rounded-xl border-2 border-slate-200 text-base font-medium text-slate-700 bg-white hover:bg-slate-50 hover:border-slate-300 transition-colors">
+                Pobierz moje dane
+            </button>
+        </form>
+        <a asp-page="DeletePersonalData"
+           class="flex-1 text-center py-3 px-4 rounded-xl text-base font-bold text-white bg-red-600 hover:bg-red-700 transition-colors">
+            Usuń konto
+        </a>
+    </div>
+</div>

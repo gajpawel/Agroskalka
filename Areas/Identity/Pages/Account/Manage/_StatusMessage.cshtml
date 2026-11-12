@@ -1,0 +1,9 @@
+﻿@model string
+
+@if (!string.IsNullOrEmpty(Model))
+{
+    var isError = Model.StartsWith("Błąd") || Model.StartsWith("Error");
+        <div class="mb-6 text-sm p-3 rounded-lg @(isError ? "text-red-600 bg-red-50" : "text-emerald-700 bg-emerald-50")" role="alert">
+        @Model
+        </div>
+}

@@ -1,0 +1,13 @@
+﻿@{
+    var active = ViewContext.ViewData["ActivePage"] as string ?? "";
+    string Tab(string page) => page == active
+        ? "px-4 py-2 rounded-lg text-sm font-semibold bg-purple-600 text-white"
+        : "px-4 py-2 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-100";
+}
+
+<nav class="flex flex-wrap gap-2 mb-6">
+    <a class="@Tab("Index")" asp-page="./Index">Profil</a>
+    <a class="@Tab("Email")" asp-page="./Email">E-mail</a>
+    <a class="@Tab("ChangePassword")" asp-page="./ChangePassword">Hasło</a>
+    <a class="@Tab("PersonalData")" asp-page="./PersonalData">Dane i usuwanie konta</a>
+</nav>

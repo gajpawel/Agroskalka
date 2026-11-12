@@ -21,7 +21,7 @@ if (!string.IsNullOrEmpty(dbHost))
 else
 {
     connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
-        ?? throw new InvalidOperationException("Brak konfiguracji po³¹czenia z baz¹ danych (sprawdŸ .env lub appsettings.json).");
+        ?? throw new InvalidOperationException("Brak konfiguracji poï¿½ï¿½czenia z bazï¿½ danych (sprawdï¿½ .env lub appsettings.json).");
 }
 
 builder.Services.AddDbContext<AppDbContext>(options =>
@@ -37,7 +37,9 @@ builder.Services.AddIdentity<User, Role>(o =>
     o.Password.RequireNonAlphanumeric = false;
     o.Lockout.MaxFailedAccessAttempts = 5;
 })
-.AddEntityFrameworkStores<AppDbContext>();
+.AddEntityFrameworkStores<AppDbContext>()
+.AddDefaultTokenProviders()
+.AddDefaultUI();
 
 // Konfiguracja ciasteczek logowania
 builder.Services.ConfigureApplicationCookie(o =>

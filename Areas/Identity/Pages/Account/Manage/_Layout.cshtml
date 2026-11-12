@@ -1,0 +1,18 @@
+﻿@{
+    Layout = "/Pages/Shared/_Layout.cshtml";
+}
+
+<div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 mt-8 sm:mt-12">
+    <div class="mb-6">
+        <h1 class="text-3xl font-extrabold text-slate-900">Moje konto</h1>
+        <p class="mt-2 text-lg text-slate-600">Zarządzaj swoimi danymi i bezpieczeństwem.</p>
+    </div>
+
+    <partial name="_ManageNav" />
+
+    @RenderBody()
+</div>
+
+@section Scripts {
+    @await RenderSectionAsync("Scripts", required: false)
+}
