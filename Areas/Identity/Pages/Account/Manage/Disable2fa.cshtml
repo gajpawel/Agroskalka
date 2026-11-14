@@ -1,0 +1,116 @@
+﻿@page
+@model Disable2faModel
+
+@{
+    Layout = "_Layout";
+    ViewData["Title"] = "Wyłączanie uwierzytelniania 2FA";
+    ViewData["ActivePage"] = "TwoFactorAuthentication";
+}
+
+<div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 sm:p-8">
+
+    <!-- Nagłówek -->
+    <div class="flex items-start gap-4 mb-6">
+
+        <div class="w-12 h-12 bg-red-100 rounded-xl flex items-center justify-center shrink-0">
+            <svg xmlns="http://www.w3.org/2000/svg"
+                 width="26" height="26"
+                 viewBox="0 0 24 24"
+                 fill="none"
+                 stroke="currentColor"
+                 stroke-width="2"
+                 stroke-linecap="round"
+                 stroke-linejoin="round"
+                 class="text-red-600">
+
+                <path d="M12 9v4"/>
+                <path d="M12 17h.01"/>
+                <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+            </svg>
+        </div>
+
+        <div>
+            <h2 class="text-xl font-bold text-slate-900">
+                Wyłącz uwierzytelnianie 2FA
+            </h2>
+
+            <p class="text-sm text-slate-500 mt-2">
+                Zmień ustawienia zabezpieczeń swojego konta.
+            </p>
+        </div>
+
+    </div>
+
+    <partial name="_StatusMessage" for="StatusMessage" />
+
+    <!-- Ostrzeżenie -->
+    <div class="bg-red-50 border border-red-200 rounded-xl p-5 mb-6">
+
+        <h3 class="text-base font-bold text-red-800 mb-3">
+            Czy na pewno chcesz wyłączyć 2FA?
+        </h3>
+
+        <p class="text-sm text-red-700 leading-relaxed mb-3">
+            Po wyłączeniu uwierzytelniania dwuskładnikowego
+            do zalogowania na konto wystarczy adres e-mail i hasło.
+        </p>
+
+        <p class="text-sm text-red-700 leading-relaxed">
+            Twoje konto będzie mniej odporne na nieautoryzowany dostęp.
+        </p>
+
+    </div>
+
+    <!-- Informacja -->
+    <div class="bg-slate-50 border border-slate-200 rounded-xl p-5 mb-7">
+
+        <h3 class="font-semibold text-slate-900 mb-2">
+            Co warto wiedzieć?
+        </h3>
+
+        <ul class="list-disc list-inside space-y-2 text-sm text-slate-600">
+
+            <li>
+                Nie będziesz musiał wpisywać kodu z aplikacji Authenticator podczas logowania.
+            </li>
+
+            <li>
+                Samo wyłączenie 2FA nie usuwa klucza z aplikacji Authenticator.
+            </li>
+
+            <li>
+                Możesz ponownie włączyć 2FA w ustawieniach konta.
+            </li>
+
+        </ul>
+
+        <p class="text-sm text-slate-600 mt-4">
+            Chcesz zamiast tego zmienić klucz?
+            <a asp-page="./ResetAuthenticator"
+               class="font-semibold text-purple-600 hover:underline">
+                Zresetuj aplikację Authenticator
+            </a>.
+        </p>
+
+    </div>
+
+    <!-- Przyciski -->
+    <div class="flex flex-col sm:flex-row gap-3">
+
+        <a asp-page="./TwoFactorAuthentication"
+           class="flex-1 inline-flex items-center justify-center rounded-xl border border-slate-300 bg-white px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition">
+            Anuluj i wróć
+        </a>
+
+        <form method="post" class="flex-1">
+
+            <button type="submit"
+                    class="w-full inline-flex items-center justify-center rounded-xl bg-red-600 px-5 py-3 text-sm font-semibold text-white hover:bg-red-700 transition">
+                Tak, wyłącz 2FA
+            </button>
+
+        </form>
+
+    </div>
+
+</div>

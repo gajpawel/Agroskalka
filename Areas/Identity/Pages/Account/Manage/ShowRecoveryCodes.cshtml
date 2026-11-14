@@ -1,0 +1,111 @@
+﻿
+@page
+@model ShowRecoveryCodesModel
+@{
+    Layout = "_Layout";
+    ViewData["Title"] = "Kody odzyskiwania";
+    ViewData["ActivePage"] = "TwoFactorAuthentication";
+}
+
+<div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 sm:p-8">
+
+    <div class="flex items-start gap-4 mb-6">
+        <div class="w-12 h-12 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0">
+            <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26"
+                 viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M20 6 9 17l-5-5"/>
+            </svg>
+        </div>
+
+        <div>
+            <h2 class="text-xl font-bold text-slate-900">
+                Kody odzyskiwania są gotowe!
+            </h2>
+
+            <p class="text-sm text-slate-500 mt-2">
+                Zapisz je, zanim opuścisz tę stronę.
+            </p>
+        </div>
+    </div>
+
+    <partial name="_StatusMessage" for="StatusMessage" />
+
+    <div class="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-6">
+        <p class="text-sm text-amber-800 leading-relaxed">
+            <strong>Uwaga!</strong> Każdy kod działa tylko raz.
+            Jeśli stracisz dostęp do telefonu, możesz użyć jednego
+            z poniższych kodów podczas logowania.
+            Nie udostępniaj ich innym osobom.
+        </p>
+    </div>
+
+    @if (Model.RecoveryCodes != null && Model.RecoveryCodes.Length > 0)
+    {
+        <div class="bg-slate-50 border border-slate-200 rounded-xl p-5 mb-5">
+
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="font-semibold text-slate-900">
+                    Twoje kody zapasowe
+                </h3>
+
+                <span class="bg-purple-100 text-purple-700 text-xs font-bold px-3 py-1 rounded-full">
+                    @Model.RecoveryCodes.Length kodów
+                </span>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+
+                @foreach (var code in Model.RecoveryCodes)
+                {
+                    <div class="bg-white border border-slate-200 rounded-lg px-4 py-3 text-center">
+                        <span class="recovery-code font-mono text-sm font-semibold text-slate-800 tracking-wide select-all">
+                            @code
+                        </span>
+                    </div>
+                }
+
+            </div>
+
+        </div>
+
+        <button type="button"
+                id="copyRecoveryCodes"
+                class="w-full inline-flex items-center justify-center rounded-xl border border-purple-200 bg-purple-50 px-5 py-3 text-sm font-semibold text-purple-700 hover:bg-purple-100 transition mb-3">
+
+            Kopiuj wszystkie kody
+
+        </button>
+
+        <p id="copyMessage"
+           class="hidden text-center text-sm text-emerald-700 mb-4"
+           role="status">
+            Kody zostały skopiowane do schowka.
+        </p>
+    }
+
+    <a asp-page="./TwoFactorAuthentication"
+       class="w-full inline-flex items-center justify-center rounded-xl bg-purple-600 px-5 py-3 text-sm font-semibold text-white hover:bg-purple-700 transition">
+        Zapisałem kody – wróć do ustawień 2FA
+    </a>
+
+</div>
+
+@section Scripts {
+    <script>
+        document.getElementById("copyRecoveryCodes")?.addEventListener("click", async function () {
+            const codes = Array.from(document.querySelectorAll(".recovery-code"))
+                .map(element => element.textContent.trim())
+                .join("\n");
+
+            try {
+                await navigator.clipboard.writeText(codes);
+
+                document.getElementById("copyMessage")
+                    ?.classList.remove("hidden");
+            } catch {
+                alert("Nie udało się skopiować kodów. Zaznacz je i skopiuj ręcznie.");
+            }
+        });
+    </script>
+}

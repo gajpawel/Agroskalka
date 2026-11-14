@@ -1,0 +1,176 @@
+﻿@page
+@model TwoFactorAuthenticationModel
+@{
+    Layout = "_Layout";
+    ViewData["Title"] = "Uwierzytelnianie dwuskładnikowe";
+    ViewData["ActivePage"] = "TwoFactorAuthentication";
+}
+
+<div class="space-y-6">
+
+    <div class="rounded-2xl border border-slate-200 bg-white p-6 sm:p-8 shadow-sm">
+
+        <div class="mb-6 flex items-start gap-4">
+            <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-purple-100 text-purple-700">
+                <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26"
+                     fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                     stroke-width="1.8">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                          d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z" />
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                          d="m9 12 2 2 4-4" />
+                </svg>
+            </div>
+
+            <div>
+                <h2 class="text-xl font-bold text-slate-900">
+                    Uwierzytelnianie dwuskładnikowe.
+                </h2>
+                <p class="mt-1 text-sm text-slate-500">
+                    Zabezpiecz konto dodatkowym kodem z aplikacji Google Authenticator.
+                </p>
+            </div>
+        </div>
+
+        <partial name="_StatusMessage" for="StatusMessage" />
+
+        @if (Model.Is2faEnabled)
+        {
+            <div class="mb-6 flex items-center gap-3 rounded-xl border border-emerald-200 bg-emerald-50 p-4">
+                <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-emerald-700">
+                    ✓
+                </span>
+
+                <div>
+                    <p class="font-semibold text-emerald-800">Ochrona 2FA jest aktywna</p>
+                    <p class="mt-0.5 text-sm text-emerald-700">
+                        Przy logowaniu na Twoje konto wymagany jest dodatkowy kod.
+                    </p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <a asp-page="./GenerateRecoveryCodes"
+                   class="inline-flex items-center justify-center rounded-xl bg-purple-600 px-5 py-3 text-center text-sm font-semibold text-white transition hover:bg-purple-700">
+                    Wygeneruj nowe kody zapasowe
+                </a>
+
+                <a asp-page="./Disable2fa"
+                   class="inline-flex items-center justify-center rounded-xl border border-red-200 bg-red-50 px-5 py-3 text-center text-sm font-semibold text-red-700 transition hover:bg-red-100">
+                    Wyłącz uwierzytelnianie 2FA
+                </a>
+            </div>
+        }
+        else
+        {
+            <div class="mb-6 rounded-xl border border-amber-200 bg-amber-50 p-4">
+                <p class="font-semibold text-amber-900">
+                    Ochrona 2FA jest wyłączona
+                </p>
+                <p class="mt-1 text-sm text-amber-800">
+                    Skonfiguruj aplikację Authenticator, aby zwiększyć bezpieczeństwo konta.
+                </p>
+            </div>
+        }
+
+        @if (Model.Is2faEnabled)
+        {
+            <div class="mt-6 rounded-xl border border-slate-200 bg-slate-50 p-4">
+                <div class="flex items-center justify-between gap-3">
+                    <div>
+                        <p class="text-sm font-semibold text-slate-800">
+                            Kody odzyskiwania
+                        </p>
+                        <p class="mt-1 text-sm text-slate-500">
+                            Pozostało niewykorzystanych kodów:
+                            <span class="font-bold text-slate-800">@Model.RecoveryCodesLeft</span>
+                        </p>
+                    </div>
+
+                    <span class="rounded-full px-3 py-1 text-xs font-bold @(Model.RecoveryCodesLeft <= 3 ? "bg-amber-100 text-amber-700" : "bg-emerald-100 text-emerald-700")">
+                        @(Model.RecoveryCodesLeft <= 3 ? "Mało kodów" : "W porządku")
+                    </span>
+                </div>
+
+                @if (Model.RecoveryCodesLeft <= 3)
+                {
+                    <p class="mt-3 text-sm text-amber-700">
+                        Kończą Ci się kody odzyskiwania. Wygeneruj nowy zestaw,
+                        aby uniknąć utraty dostępu do konta.
+                    </p>
+                }
+            </div>
+        }
+    </div>
+
+    @if (Model.HasAuthenticator)
+    {
+        <div class="rounded-2xl border border-slate-200 bg-white p-6 sm:p-8 shadow-sm">
+            <h3 class="text-lg font-bold text-slate-900">
+                Aplikacja uwierzytelniająca
+            </h3>
+
+            <p class="mt-2 text-sm leading-6 text-slate-500">
+                Zarządzaj połączeniem konta z aplikacją Google Authenticator
+                lub Microsoft Authenticator.
+            </p>
+
+            <div class="mt-5 flex flex-col gap-3 sm:flex-row">
+                <a asp-page="./EnableAuthenticator"
+                   class="inline-flex flex-1 items-center justify-center rounded-xl bg-purple-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-purple-700">
+                    Pokaż konfigurację aplikacji
+                </a>
+
+                <a asp-page="./ResetAuthenticator"
+                   class="inline-flex flex-1 items-center justify-center rounded-xl border border-slate-300 bg-white px-5 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50">
+                    Zresetuj aplikację
+                </a>
+            </div>
+
+            <p class="mt-3 text-xs text-slate-500">
+                Resetowanie unieważnia dotychczasowy klucz. Następnie trzeba ponownie
+                zeskanować kod QR i potwierdzić nową konfigurację.
+            </p>
+        </div>
+    }
+    else
+    {
+        <div class="rounded-2xl border border-slate-200 bg-white p-6 sm:p-8 shadow-sm">
+            <h3 class="text-lg font-bold text-slate-900">
+                Połącz aplikację Authenticator
+            </h3>
+
+            <p class="mt-2 text-sm text-slate-500">
+                Zeskanuj kod QR w aplikacji na telefonie i wpisz
+                wygenerowany kod, aby włączyć zabezpieczenie.
+            </p>
+
+            <a asp-page="./EnableAuthenticator"
+               class="mt-5 inline-flex items-center justify-center rounded-xl bg-purple-600 px-6 py-3 text-sm font-semibold text-white transition hover:bg-purple-700">
+                Skonfiguruj aplikację
+            </a>
+        </div>
+    }
+
+    @if (Model.IsMachineRemembered)
+    {
+        <div class="rounded-2xl border border-slate-200 bg-white p-6 sm:p-8 shadow-sm">
+            <h3 class="text-lg font-bold text-slate-900">
+                Zapamiętane urządzenie
+            </h3>
+
+            <p class="mt-2 text-sm text-slate-500">
+                Ta przeglądarka jest zapamiętana, dlatego nie zawsze
+                musisz podawać kod 2FA podczas logowania.
+            </p>
+
+            <form method="post" asp-page-handler="ForgetBrowser" class="mt-5">
+                <button type="submit"
+                        class="inline-flex items-center justify-center rounded-xl border border-slate-300 bg-white px-5 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50">
+                    Usuń zapamiętanie tej przeglądarki
+                </button>
+            </form>
+        </div>
+    }
+
+</div>

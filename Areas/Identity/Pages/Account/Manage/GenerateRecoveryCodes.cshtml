@@ -1,0 +1,77 @@
+﻿
+@page
+@model GenerateRecoveryCodesModel
+@{
+    Layout = "_Layout";
+    ViewData["Title"] = "Nowe kody odzyskiwania";
+    ViewData["ActivePage"] = "TwoFactorAuthentication";
+}
+
+<div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 sm:p-8">
+
+    <div class="flex items-start gap-4 mb-6">
+        <div class="w-12 h-12 rounded-xl bg-purple-100 text-purple-700 flex items-center justify-center shrink-0">
+            <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26"
+                 viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="11" width="18" height="11" rx="2"/>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+            </svg>
+        </div>
+
+        <div>
+            <h2 class="text-xl font-bold text-slate-900">
+                Wygeneruj nowe kody odzyskiwania
+            </h2>
+
+            <p class="text-sm text-slate-500 mt-2">
+                Zadbaj o możliwość odzyskania dostępu do konta.
+            </p>
+        </div>
+    </div>
+
+    <partial name="_StatusMessage" for="StatusMessage" />
+
+    <div class="rounded-xl bg-amber-50 border border-amber-200 p-5 mb-6">
+        <h3 class="font-bold text-amber-900 mb-2">
+            Ważne informacje
+        </h3>
+
+        <ul class="list-disc list-inside space-y-2 text-sm text-amber-800">
+            <li>Nowy zestaw będzie zawierał 10 kodów odzyskiwania.</li>
+            <li>Poprzednie kody przestaną działać.</li>
+            <li>Każdy kod może zostać wykorzystany tylko jeden raz.</li>
+            <li>Zapisz nowe kody w bezpiecznym miejscu.</li>
+        </ul>
+    </div>
+
+    <div class="rounded-xl border border-slate-200 bg-slate-50 p-5 mb-7">
+        <h3 class="font-semibold text-slate-900 mb-2">
+            Kiedy przydadzą się kody odzyskiwania?
+        </h3>
+
+        <p class="text-sm text-slate-600 leading-relaxed">
+            Jeśli zgubisz telefon lub utracisz dostęp do Google Authenticator,
+            kod odzyskiwania umożliwi Ci zalogowanie się na konto.
+            Wygenerowanie nowych kodów nie zmienia konfiguracji
+            aplikacji Authenticator.
+        </p>
+    </div>
+
+    <div class="flex flex-col sm:flex-row gap-3">
+
+        <a asp-page="./TwoFactorAuthentication"
+           class="flex-1 inline-flex items-center justify-center rounded-xl border border-slate-300 bg-white px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition">
+            Anuluj
+        </a>
+
+        <form method="post" class="flex-1">
+            <button type="submit"
+                    class="w-full inline-flex items-center justify-center rounded-xl bg-purple-600 px-5 py-3 text-sm font-semibold text-white hover:bg-purple-700 transition">
+                Wygeneruj 10 nowych kodów
+            </button>
+        </form>
+
+    </div>
+
+</div>
