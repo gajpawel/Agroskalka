@@ -1,0 +1,139 @@
+﻿@page
+@model ResetAuthenticatorModel
+@{
+    Layout = "_Layout";
+    ViewData["Title"] = "Resetowanie aplikacji Authenticator";
+    ViewData["ActivePage"] = "TwoFactorAuthentication";
+}
+
+<div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 sm:p-8">
+
+    <!-- Ikona i nagłówek -->
+    <div class="flex items-start gap-4 mb-6">
+
+        <div class="w-12 h-12 bg-red-100 rounded-xl flex items-center justify-center shrink-0">
+            <svg xmlns="http://www.w3.org/2000/svg"
+                 width="26" height="26"
+                 viewBox="0 0 24 24"
+                 fill="none"
+                 stroke="currentColor"
+                 stroke-width="2"
+                 stroke-linecap="round"
+                 stroke-linejoin="round"
+                 class="text-red-600">
+
+                <path d="M12 9v4"/>
+                <path d="M12 17h.01"/>
+                <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+            </svg>
+        </div>
+
+        <div>
+            <h2 class="text-xl font-bold text-slate-900">
+                Resetowanie aplikacji Authenticator
+            </h2>
+
+            <p class="text-sm text-slate-500 mt-2">
+                Zarządzaj kluczem uwierzytelniania dwuskładnikowego.
+            </p>
+        </div>
+
+    </div>
+
+    <partial name="_StatusMessage" for="StatusMessage" />
+
+    <!-- Ostrzeżenie -->
+    <div class="bg-red-50 border border-red-200 rounded-xl p-5 mb-6">
+
+        <h3 class="text-red-800 font-bold text-base mb-3">
+            Uwaga! Ta operacja zmieni zabezpieczenia konta.
+        </h3>
+
+        <p class="text-red-700 text-sm leading-relaxed mb-3">
+            Po zresetowaniu klucza obecne kody generowane
+            przez aplikację Google Authenticator przestaną działać.
+        </p>
+
+        <p class="text-red-700 text-sm leading-relaxed">
+            Uwierzytelnianie dwuskładnikowe zostanie wyłączone
+            do momentu ponownego skonfigurowania aplikacji.
+        </p>
+
+    </div>
+
+    <!-- Informacja -->
+    <div class="bg-purple-50 border border-purple-100 rounded-xl p-5 mb-8">
+
+        <h3 class="text-slate-900 font-semibold mb-3">
+            Co się stanie po zresetowaniu?
+        </h3>
+
+        <ol class="space-y-3 text-sm text-slate-700">
+
+            <li class="flex gap-3">
+                <span class="flex items-center justify-center w-6 h-6 rounded-full bg-purple-600 text-white text-xs font-bold shrink-0">
+                    1
+                </span>
+                <span>
+                    Twój dotychczasowy klucz Authenticator zostanie unieważniony.
+                </span>
+            </li>
+
+            <li class="flex gap-3">
+                <span class="flex items-center justify-center w-6 h-6 rounded-full bg-purple-600 text-white text-xs font-bold shrink-0">
+                    2
+                </span>
+                <span>
+                    Otrzymasz nowy kod QR do zeskanowania telefonem.
+                </span>
+            </li>
+
+            <li class="flex gap-3">
+                <span class="flex items-center justify-center w-6 h-6 rounded-full bg-purple-600 text-white text-xs font-bold shrink-0">
+                    3
+                </span>
+                <span>
+                    Potwierdzisz konfigurację nowym sześciocyfrowym kodem.
+                </span>
+            </li>
+
+        </ol>
+    </div>
+
+    <!-- Przyciski -->
+    <div class="flex flex-col sm:flex-row gap-3">
+
+        <a asp-page="./TwoFactorAuthentication"
+           class="flex-1 inline-flex items-center justify-center px-6 py-3
+                  border border-slate-300 rounded-xl
+                  text-slate-700 bg-white font-semibold text-sm
+                  hover:bg-slate-50 transition-colors">
+
+            Anuluj i wróć
+
+        </a>
+
+        <form method="post" class="flex-1">
+
+            <button type="submit"
+                    id="reset-authenticator-button"
+                    class="w-full inline-flex items-center justify-center
+                           px-6 py-3 rounded-xl
+                           bg-red-600 text-white font-semibold text-sm
+                           hover:bg-red-700 transition-colors
+                           focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2">
+
+                Zresetuj klucz Authenticator
+
+            </button>
+
+        </form>
+
+    </div>
+
+    <p class="text-xs text-slate-400 mt-6 text-center">
+        Jeśli nie chcesz zmieniać ustawień bezpieczeństwa,
+        wybierz „Anuluj i wróć”.
+    </p>
+
+</div>
