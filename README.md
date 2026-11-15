@@ -44,7 +44,15 @@ DB_PORT=5432
 DB_NAME=agroskalka
 DB_USER=postgres
 DB_PASSWORD=twoje_haslo_do_bazy
+CAPTCHA__ENABLED=true
+CAPTCHA__SITEKEY=klucz_publiczny_Cloudflare_Turnstile
+CAPTCHA__SECRETKEY=klucz_prywatny_Cloudflare_Turnstile
 ```
+
+CAPTCHA jest domyślnie włączona dla rejestracji oraz logowania hasłem. Utwórz
+widget Cloudflare Turnstile dla domeny aplikacji i ustaw klucz publiczny oraz
+prywatny w pliku `.env` (lub w środowisku wdrożeniowym). Serwer weryfikuje
+każdy token w Cloudflare przed utworzeniem użytkownika lub zalogowaniem.
 
 ### 3. Utworzenie bazy danych i aplikowanie migracji
 

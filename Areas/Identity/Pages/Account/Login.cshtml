@@ -36,6 +36,11 @@
                             @Html.DisplayNameFor(m => m.Input.RememberMe)
                         </label>
                     </div>
+
+                    @if (Model.CaptchaEnabled)
+                    {
+                        <div class="cf-turnstile" data-sitekey="@Model.CaptchaSiteKey"></div>
+                    }
                     
                     <div>
                         <button id="login-submit" type="submit" class="w-full flex justify-center py-3 px-4 border border-transparent rounded-xl shadow-sm text-base font-bold text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-colors">
@@ -92,4 +97,8 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    @if (Model.CaptchaEnabled)
+    {
+        <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+    }
 }

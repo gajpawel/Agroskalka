@@ -9,6 +9,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Agroskalka.Models;
+using Agroskalka.Services.Captcha;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
@@ -22,11 +23,16 @@ namespace Agroskalka.Areas.Identity.Pages.Account
     {
         private readonly SignInManager<User> _signInManager;
         private readonly ILogger<LoginModel> _logger;
+        private readonly ICaptchaService _captchaService;
 
-        public LoginModel(SignInManager<User> signInManager, ILogger<LoginModel> logger)
+        public LoginModel(
+            SignInManager<User> signInManager,
+            ILogger<LoginModel> logger,
+            ICaptchaService captchaService)
         {
             _signInManager = signInManager;
             _logger = logger;
+            _captchaService = captchaService;
         }
 
         /// <summary>
@@ -47,6 +53,10 @@ namespace Agroskalka.Areas.Identity.Pages.Account
         ///     directly from your code. This API may change or be removed in future releases.
         /// </summary>
         public string ReturnUrl { get; set; }
+
+        public bool CaptchaEnabled => _captchaService.IsEnabled;
+
+        public string CaptchaSiteKey => _captchaService.SiteKey;
 
         /// <summary>
         ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
@@ -83,6 +93,7 @@ namespace Agroskalka.Areas.Identity.Pages.Account
             /// </summary>
             [Display(Name = "Zapamiętaj mnie?")]
             public bool RememberMe { get; set; }
+
         }
 
         public async Task OnGetAsync(string returnUrl = null)
@@ -144,6 +155,15 @@ namespace Agroskalka.Areas.Identity.Pages.Account
 
             if (!ModelState.IsValid)
                 return Page();
+
+            if (!await _captchaService.VerifyAsync(
+                    Request.Form["cf-turnstile-response"].FirstOrDefault(),
+                    HttpContext.Connection.RemoteIpAddress?.ToString(),
+                    HttpContext.RequestAborted))
+            {
+                ModelState.AddModelError(string.Empty, "Potwierdź, że nie jesteś robotem.");
+                return Page();
+            }
 
             var user = await _signInManager.UserManager
                 .FindByEmailAsync(Input.Email);

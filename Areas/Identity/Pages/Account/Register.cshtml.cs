@@ -13,6 +13,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Agroskalka.Models;
+using Agroskalka.Services.Captcha;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -30,12 +31,14 @@ namespace Agroskalka.Areas.Identity.Pages.Account
         private readonly IUserEmailStore<User> _emailStore;
         private readonly ILogger<RegisterModel> _logger;
         private readonly IEmailSender _emailSender;
+        private readonly ICaptchaService _captchaService;
 
         public RegisterModel(
             UserManager<User> userManager,
             //IUserStore<User> userStore,
             SignInManager<User> signInManager,
-            ILogger<RegisterModel> logger
+            ILogger<RegisterModel> logger,
+            ICaptchaService captchaService
             /*IEmailSender emailSender*/)
         {
             _userManager = userManager;
@@ -43,6 +46,7 @@ namespace Agroskalka.Areas.Identity.Pages.Account
             //_emailStore = GetEmailStore();
             _signInManager = signInManager;
             _logger = logger;
+            _captchaService = captchaService;
             //_emailSender = emailSender;
         }
 
@@ -109,7 +113,12 @@ namespace Agroskalka.Areas.Identity.Pages.Account
             [StringLength(100)]
             [Display(Name = "Nazwisko")]
             public string LastName { get; set; }
+
         }
+
+        public bool CaptchaEnabled => _captchaService.IsEnabled;
+
+        public string CaptchaSiteKey => _captchaService.SiteKey;
 
 
         public async Task OnGetAsync(string returnUrl = null)
@@ -173,6 +182,15 @@ namespace Agroskalka.Areas.Identity.Pages.Account
 
             if (!ModelState.IsValid)
                 return Page();
+
+            if (!await _captchaService.VerifyAsync(
+                    Request.Form["cf-turnstile-response"].FirstOrDefault(),
+                    HttpContext.Connection.RemoteIpAddress?.ToString(),
+                    HttpContext.RequestAborted))
+            {
+                ModelState.AddModelError(string.Empty, "Potwierdź, że nie jesteś robotem.");
+                return Page();
+            }
 
             var user = new User
             {

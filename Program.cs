@@ -1,6 +1,7 @@
 using Agroskalka.Data;
 using Microsoft.EntityFrameworkCore;
 using Agroskalka.Models;
+using Agroskalka.Services.Captcha;
 using Microsoft.AspNetCore.Identity;
 
 DotNetEnv.Env.Load();
@@ -28,6 +29,10 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(connectionString)
            .UseSnakeCaseNamingConvention());
 
+builder.Services
+    .AddOptions<CaptchaOptions>()
+    .Bind(builder.Configuration.GetSection(CaptchaOptions.SectionName));
+builder.Services.AddHttpClient<ICaptchaService, TurnstileCaptchaService>();
 
 // ASP.NET Identity
 builder.Services.AddIdentity<User, Role>(o =>
