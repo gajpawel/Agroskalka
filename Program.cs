@@ -1,10 +1,12 @@
 using Agroskalka.Data;
-using Microsoft.EntityFrameworkCore;
 using Agroskalka.Models;
 using Agroskalka.Services.Captcha;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using Stripe;
 
 DotNetEnv.Env.Load();
+StripeConfiguration.ApiKey = Environment.GetEnvironmentVariable("STRIPE_SECRET_KEY");
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -70,6 +72,8 @@ builder.Services.AddRazorPages(o =>
     o.Conventions.AuthorizeFolder("/Admin", "AdminOnly");
     o.Conventions.AuthorizeFolder("/Client", "ClientOnly");
 });
+
+builder.Services.AddControllers();
 
 
 var app = builder.Build();
@@ -146,5 +150,6 @@ app.UseAuthorization();
 
 app.MapRazorPages();
 app.MapDefaultControllerRoute(); // je�li u�ywasz kontroler�w MVC obok Razor Pages
+app.MapControllers();
 
 app.Run();

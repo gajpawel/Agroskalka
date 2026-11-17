@@ -1,6 +1,6 @@
-﻿# Agroskałka - System sprzedaży biletów wstępu
+# Agroskałka - System sprzedaży biletów wstępu
 
-Aplikacja webowa wspierająca proces rezerwacji oraz zakupu biletów do wiejskiego parku rozrywki **Agroskałka**. Projekt oparty jest o platformę **ASP.NET Core 8** (Razor Pages / Web API) oraz bazę danych **PostgreSQL** z wykorzystaniem **Entity Framework Core**. Interfejs użytkownika korzysta z **Tailwind CSS**.
+Aplikacja webowa wspierająca proces rezerwacji oraz zakupu biletów do wiejskiego parku rozrywki **Agroskałka**. Projekt oparty jest o platformę **ASP.NET Core 8** (Razor Pages / Web API) oraz bazę danych **PostgreSQL** z wykorzystaniem **Entity Framework Core**. Interfejs użytkownika korzysta z **Tailwind CSS**, a płatności online obsługiwane są przez bramkę **Stripe**.
 
 ---
 
@@ -11,6 +11,7 @@ Przed uruchomieniem upewnij się, że na swojej stacji roboczej masz zainstalowa
 * [Node.js](https://nodejs.org/) (wersja LTS) oraz menedżer pakietów **npm** (niezbędne do kompilacji Tailwind CSS)
 * [PostgreSQL](https://www.postgresql.org/download/) (wersja 14 lub nowsza) lub uruchomiony kontener Docker z PostgreSQL
 * pgAdmin4
+* [Stripe CLI](https://docs.stripe.com/stripe-cli) (wymagane do lokalnego testowania webhooków płatności)
 * [Visual Studio 2022](https://visualstudio.microsoft.com/) (z pakietem *ASP.NET and web development*) lub Visual Studio Code / Rider
 * Globalne narzędzie EF Core CLI (opcjonalnie, jeśli używasz terminala):
   ```shell
@@ -32,35 +33,66 @@ npm install
 
 ---
 
-### 2. Konfiguracja połączenia z bazą danych
+### 2. Konfiguracja zmiennych środowiskowych (`.env`)
 
 > ⚠️ **Uwaga:** Pliki z poświadczeniami (`.env`) są ignorowane przez Git i nie trafiają do repozytorium.
 
 Projekt obsługuje zmienne środowiskowe z pliku `.env`. W katalogu głównym projektu (obok pliku `Agroskalka.csproj`) utwórz plik `.env` na podstawie poniższego wzorca:
 
 ```env
+# Baza danych PostgreSQL
 DB_HOST=localhost
 DB_PORT=5432
 DB_NAME=agroskalka
 DB_USER=postgres
 DB_PASSWORD=twoje_haslo_do_bazy
+
+# Cloudflare Turnstile (CAPTCHA)
 CAPTCHA__ENABLED=true
 CAPTCHA__SITEKEY=klucz_publiczny_Cloudflare_Turnstile
 CAPTCHA__SECRETKEY=klucz_prywatny_Cloudflare_Turnstile
+
+# Bramka płatności Stripe (Tryb testowy)
+STRIPE_SECRET_KEY=sk_test_...
+STRIPE_PUBLISHABLE_KEY=pk_test_...
+STRIPE_WEBHOOK_SECRET=whsec_...
 ```
 
-CAPTCHA jest domyślnie włączona dla rejestracji oraz logowania hasłem. Utwórz
-widget Cloudflare Turnstile dla domeny aplikacji i ustaw klucz publiczny oraz
-prywatny w pliku `.env` (lub w środowisku wdrożeniowym). Serwer weryfikuje
-każdy token w Cloudflare przed utworzeniem użytkownika lub zalogowaniem.
+* **CAPTCHA:** Domyślnie włączona dla rejestracji oraz logowania hasłem. Utwórz widget Cloudflare Turnstile dla domeny aplikacji i ustaw klucze w `.env`.
+* **Stripe:** Zaloguj się do [Stripe Dashboard](https://dashboard.stripe.com/test/apikeys), przełącz panel w **Test mode** i skopiuj `Secret key` (`sk_test_...`) oraz `Publishable key` (`pk_test_...`).
 
-### 3. Utworzenie bazy danych i aplikowanie migracji
+---
+
+### 3. Konfiguracja bramki płatności Stripe (Test Mode)
+
+1. **Włączenie metod płatności:**
+   W [Stripe Dashboard](https://dashboard.stripe.com/test/settings/payment_methods) przejdź do **Settings $\to$ Payment methods** i upewnij się, że włączone są:
+   * **Cards** (Karty płatnicze)
+   * **BLIK**
+   * **Przelewy24**
+
+2. **Konfiguracja lokalnego Webhooka (Stripe CLI):**
+   Aby aplikacja automatycznie zmieniała status biletu na opłacony (`IsPaid = true`) po zakończeniu płatności na `localhost`, musisz przekierować zdarzenia ze Stripe za pomocą Stripe CLI:
+   * Zaloguj się w terminalu:
+     ```shell
+     stripe login
+     ```
+   * Uruchom nasłuchiwanie i przekierowanie na adres lokalnego kontrolera webhooków (dopasuj numer portu z pliku `Properties/launchSettings.json`, np. `7251`):
+     ```shell
+     stripe listen --forward-to https://localhost:7251/api/webhooks/stripe --skip-verify --all-snapshot
+     ```
+   * Skopiuj wygenerowany przez komendę klucz podpisu (zaczynający się od `whsec_...`) i wklej go do pliku `.env` jako wartość zmiennej `STRIPE_WEBHOOK_SECRET`, a następnie zrestartuj aplikację.
+   * Aby przetestować płatność, użyj deweloperskiej karty płatniczej o numerze 4242 4242 4242 4242, data ważności dowolna większa niż dzisiaj, pozostałe dane dowolne spełniające wymagania formularza
+
+---
+
+### 4. Utworzenie bazy danych i aplikowanie migracji
 
 1. Upewnij się, że usługa PostgreSQL jest aktywna.
 2. Utwórz pustą bazę danych (np. przez pgAdmin, psql lub terminal):
 ```shell
 # W psql:
-CREATE DATABASE agroskalka_db;
+CREATE DATABASE agroskalka;
 ```
 
 3. Zaaplikuj migracje EF Core oraz domyślne dane początkowe (seeder):
@@ -78,21 +110,24 @@ dotnet ef database update
 
 ## 🚀 Uruchomienie projektu (Tryb Deweloperski)
 
-Aby widzieć zmiany w kodzie C# (Hot Reload) oraz zmiany w stylach Tailwind CSS w czasie rzeczywistym, zaleca się uruchomienie projektu w dwóch osobnych oknach terminala:
+Aby widzieć zmiany w kodzie C# (Hot Reload), style Tailwind CSS oraz odbierać potwierdzenia płatności ze Stripe w czasie rzeczywistym, uruchom trzy procesy w osobnych oknach terminala:
 
 **Terminal 1 (Kompilacja Tailwind CSS w tle):**
 ```shell
-npx @tailwindcss/cli -i ./wwwroot/css/app.css  -o ./wwwroot/css/site.css --watch
+npx @tailwindcss/cli -i ./wwwroot/css/app.css -o ./wwwroot/css/site.css --watch
 ```
 
-**Terminal 2 (Uruchomienie serwera .NET z Hot Reload):**
+**Terminal 2 (Tunel webhooków Stripe):**
+```shell
+stripe listen --forward-to https://localhost:7251/api/webhooks/stripe --skip-verify --all-snapshot
+```
+
+**Terminal 3 (Uruchomienie serwera .NET z Hot Reload):**
 ```shell
 dotnet watch
 ```
 
-Jeśli nie potrzebujesz odświeżania na żywo, aplikację można uruchomić standardowo:
-* Klawiszem `F5` / `Ctrl + F5` w środowisku Visual Studio.
-* Komendą `dotnet run` z poziomu terminala. Zbuduj wcześniej style jednorazowo komendą: `npx @tailwindcss/cli -o ./wwwroot/css/site.css`.
+Jeśli nie potrzebujesz odświeżania na żywo, aplikację można uruchomić standardowo klawiszem `F5` / `Ctrl + F5` w Visual Studio (pamiętając o jednorazowym zbudowaniu stylów komendą `npx @tailwindcss/cli -i ./wwwroot/css/app.css -o ./wwwroot/css/site.css`).
 
 Domyślnie aplikacja uruchamia się pod adresem: `https://localhost:7xxx` lub `http://localhost:5xxx`.
 
@@ -111,4 +146,4 @@ Po nałożeniu migracji baza danych zostaje automatycznie zainicjalizowana domy�
 
 ## 📂 Konwencje bazodanowe
 
-Wszystkie tabele oraz kolumny w bazie PostgreSQL generowane są automatycznie w formacie **`snake_case`** za pośrednictwem pakietu `EFCore.NamingConventions`. W kodzie C# zachowujemy standardowy **`PascalCase`**.
+Wszystkie tabele oraz kolumny w bazie PostgreSQL generowane są automatycznie w formacie **`snake_case`** za pośredwem pakietu `EFCore.NamingConventions`. W kodzie C# zachowujemy standardowy **`PascalCase`**.
