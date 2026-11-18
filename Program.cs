@@ -2,6 +2,8 @@ using Agroskalka.Data;
 using Agroskalka.Models;
 using Agroskalka.Services.Captcha;
 using Microsoft.AspNetCore.Identity;
+using System.Threading.RateLimiting;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Stripe;
 
@@ -43,6 +45,7 @@ builder.Services.AddIdentity<User, Role>(o =>
     o.Password.RequiredLength = 6;
     o.Password.RequireNonAlphanumeric = false;
     o.Lockout.MaxFailedAccessAttempts = 5;
+    o.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(15);
 })
 .AddEntityFrameworkStores<AppDbContext>()
 .AddDefaultTokenProviders()
@@ -71,6 +74,36 @@ builder.Services.AddRazorPages(o =>
 {
     o.Conventions.AuthorizeFolder("/Admin", "AdminOnly");
     o.Conventions.AuthorizeFolder("/Client", "ClientOnly");
+});
+
+// Mechanizm Rate Limiting
+
+builder.Services.AddRateLimiter(o =>
+{
+    o.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+
+    // Logowanie / rejestracja: 5 prób na minutę na IP (tylko POST)
+    o.AddPolicy("auth", ctx =>
+        ctx.Request.Method == HttpMethods.Post
+            ? RateLimitPartition.GetFixedWindowLimiter(
+                ctx.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+                _ => new FixedWindowRateLimiterOptions
+                {
+                    PermitLimit = 5,
+                    Window = TimeSpan.FromMinutes(1),
+                    QueueLimit = 0
+                })
+            : RateLimitPartition.GetNoLimiter("get"));
+
+    // Globalny limit dla całej aplikacji: 100 żądań/min na IP
+    o.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(ctx =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            ctx.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+            _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = 100,
+                Window = TimeSpan.FromMinutes(1)
+            }));
 });
 
 builder.Services.AddControllers();
@@ -144,6 +177,7 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
+app.UseRateLimiter();
 // Uwierzytelnianie musi by� przed autoryzacj�
 app.UseAuthentication();
 app.UseAuthorization();

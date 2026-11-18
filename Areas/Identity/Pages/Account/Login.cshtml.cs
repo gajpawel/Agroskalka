@@ -16,9 +16,11 @@ using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Logging;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace Agroskalka.Areas.Identity.Pages.Account
 {
+    [EnableRateLimiting("auth")]
     public class LoginModel : PageModel
     {
         private readonly SignInManager<User> _signInManager;
@@ -152,6 +154,8 @@ namespace Agroskalka.Areas.Identity.Pages.Account
         public async Task<IActionResult> OnPostAsync(string returnUrl = null)
         {
             returnUrl ??= Url.Content("~/");
+            ReturnUrl = returnUrl;
+            ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
 
             if (!ModelState.IsValid)
                 return Page();

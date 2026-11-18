@@ -20,9 +20,11 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace Agroskalka.Areas.Identity.Pages.Account
 {
+    [EnableRateLimiting("auth")]
     public class RegisterModel : PageModel
     {
         private readonly SignInManager<User> _signInManager;

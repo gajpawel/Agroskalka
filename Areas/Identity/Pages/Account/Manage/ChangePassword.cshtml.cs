@@ -9,10 +9,12 @@ using Agroskalka.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.Logging;
 
 namespace Agroskalka.Areas.Identity.Pages.Account.Manage
 {
+    [EnableRateLimiting("auth")]
     public class ChangePasswordModel : PageModel
     {
         private readonly UserManager<User> _userManager;
