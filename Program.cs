@@ -108,6 +108,28 @@ builder.Services.AddRateLimiter(o =>
 
 builder.Services.AddControllers();
 
+// Logowanie OIDC (Keycloak)
+builder.Services.AddAuthentication()
+    .AddOpenIdConnect("Keycloak", "Keycloak", options =>
+    {
+        options.SignInScheme = IdentityConstants.ExternalScheme;
+        options.Authority = Environment.GetEnvironmentVariable("OIDC_AUTHORITY")
+                            ?? "http://localhost:8080/realms/agroskalka";
+        options.ClientId = Environment.GetEnvironmentVariable("OIDC_CLIENT_ID")
+                           ?? "agroskalka-web";
+        options.ClientSecret = Environment.GetEnvironmentVariable("OIDC_CLIENT_SECRET");
+
+        options.ResponseType = "code";
+        options.SaveTokens = true;
+        options.GetClaimsFromUserInfoEndpoint = true;
+        options.RequireHttpsMetadata = !builder.Environment.IsDevelopment();
+
+        options.Scope.Clear();
+        options.Scope.Add("openid");
+        options.Scope.Add("profile");
+        options.Scope.Add("email");
+    });
+
 
 var app = builder.Build();
 
