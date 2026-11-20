@@ -2,14 +2,18 @@
   keycloak:
     image: quay.io/keycloak/keycloak:latest
     container_name: agroskalka-keycloak
-    command: start-dev
+    command: start-dev --import-realm
     environment:
-      KC_BOOTSTRAP_ADMIN_USERNAME: admin
-      KC_BOOTSTRAP_ADMIN_PASSWORD: admin
+      OIDC_CLIENT_SECRET: ${OIDC_CLIENT_SECRET}
+      KC_BOOTSTRAP_ADMIN_USERNAME: ${KC_BOOTSTRAP_ADMIN_USERNAME}
+      KC_BOOTSTRAP_ADMIN_PASSWORD: ${KC_BOOTSTRAP_ADMIN_PASSWORD}
+      KC_TEST_ADMIN_USERNAME: ${KC_TEST_ADMIN_USERNAME}
+      KC_TEST_ADMIN_PASSWORD: ${KC_TEST_ADMIN_PASSWORD}
     ports:
       - "8080:8080"
     volumes:
       - keycloak_data:/opt/keycloak/data
+      - ./agroskalka-realm.json:/opt/keycloak/data/import/agroskalka-realm.json:ro
 
 volumes:
   keycloak_data:
