@@ -6,6 +6,8 @@ using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Stripe;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 
 DotNetEnv.Env.Load();
 StripeConfiguration.ApiKey = Environment.GetEnvironmentVariable("STRIPE_SECRET_KEY");
@@ -128,6 +130,20 @@ builder.Services.AddAuthentication()
         options.Scope.Add("openid");
         options.Scope.Add("profile");
         options.Scope.Add("email");
+
+        options.Events = new OpenIdConnectEvents
+        {
+            OnRedirectToIdentityProviderForSignOut = context =>
+            {
+                var idToken = context.Properties?.GetTokenValue("id_token");
+                if (!string.IsNullOrEmpty(idToken))
+                {
+                    context.ProtocolMessage.IdTokenHint = idToken;
+                }
+
+                return Task.CompletedTask;
+            }
+        };
     });
 
 

@@ -89,10 +89,44 @@ public class ExternalAuthController : Controller
                 await _userManager.AddToRoleAsync(user, "Client");
         }
 
-        // 5. Logujemy użytkownika standardowym ciasteczkiem Identity i czyścimy tymczasowe ciasteczko OIDC
-        await _signInManager.SignInAsync(user, isPersistent: false);
+        // 5. Logujemy użytkownika w Identity, zachowując id_token z Keycloaka do późniejszego wylogowania
+        var authProps = new AuthenticationProperties { IsPersistent = false };
+        var idToken = info.AuthenticationTokens?.FirstOrDefault(t => t.Name == "id_token")?.Value;
+        if (!string.IsNullOrEmpty(idToken))
+        {
+            authProps.StoreTokens(new[]
+            {
+                new AuthenticationToken { Name = "id_token", Value = idToken }
+            });
+        }
+
+        await _signInManager.SignInAsync(user, authProps);
         await HttpContext.SignOutAsync(IdentityConstants.ExternalScheme);
 
         return LocalRedirect(Url.IsLocalUrl(returnUrl) ? returnUrl : "/");
+    }
+    
+    [HttpPost("logout")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Logout()
+    {
+        var idToken = await HttpContext.GetTokenAsync("id_token");
+
+        // Wylogowanie lokalne (Identity)
+        await _signInManager.SignOutAsync();
+
+        // Jeśli użytkownik był zalogowany przez Keycloaka, wyloguj go też tam
+        if (!string.IsNullOrEmpty(idToken))
+        {
+            var props = new AuthenticationProperties { RedirectUri = "/" };
+            props.StoreTokens(new[]
+            {
+                new AuthenticationToken { Name = "id_token", Value = idToken }
+            });
+
+            return SignOut(props, "Keycloak");
+        }
+
+        return Redirect("/");
     }
 }
