@@ -151,7 +151,10 @@ Przy pierwszym uruchomieniu Keycloak automatycznie zaimportuje konfigurację rea
 
 ## 🚀 Uruchomienie projektu (Tryb Deweloperski)
 
-> Przed startem upewnij się, że kontener Keycloak działa w tle (`docker compose up -d`).
+> Przed startem upewnij się, że kontener Keycloak działa w tle. Jeśli nie uruchom go:
+>```shell
+>docker compose up -d
+>```
 
 Aby widzieć zmiany w kodzie C# (Hot Reload), style Tailwind CSS oraz odbierać potwierdzenia płatności ze Stripe w czasie rzeczywistym, uruchom trzy procesy w osobnych oknach terminala:
 
