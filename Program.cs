@@ -62,6 +62,9 @@ builder.Services.ConfigureApplicationCookie(o =>
     o.SlidingExpiration = true;
 });
 
+// Ustawianie ciasteczka po logowaniu przez OICD
+builder.Services.AddScoped<IUserClaimsPrincipalFactory<User>, AppClaimsPrincipalFactory>();
+
 // Autoryzacja
 builder.Services.AddAuthorization(o =>
 {
