@@ -30,7 +30,7 @@
   "registrationAllowed": true,
   "registrationEmailAsUsername": true,
   "rememberMe": false,
-  "verifyEmail": false,
+  "verifyEmail": true,
   "loginWithEmailAllowed": true,
   "duplicateEmailsAllowed": false,
   "resetPasswordAllowed": false,
@@ -1687,7 +1687,23 @@
     "contentSecurityPolicy": "frame-src 'self'; frame-ancestors 'self'; object-src 'none';",
     "strictTransportSecurity": "max-age=31536000; includeSubDomains"
   },
-  "smtpServer": {},
+  "smtpServer": {
+    "allowutf8": "",
+    "replyToDisplayName": "",
+    "debug": "false",
+    "starttls": "false",
+    "auth": "",
+    "writeTimeout": "10000",
+    "envelopeFrom": "",
+    "ssl": "false",
+    "timeout": "10000",
+    "port": "1025",
+    "replyTo": "",
+    "host": "mailpit",
+    "from": "no-reply@agroskalka.pl",
+    "fromDisplayName": "AgroSkałka",
+    "connectionTimeout": "10000"
+  },
   "eventsEnabled": false,
   "eventsListeners": [
     "jboss-logging"

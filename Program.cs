@@ -145,6 +145,20 @@ builder.Services.AddAuthentication()
                 }
 
                 return Task.CompletedTask;
+            },
+            // Jeśli zalogowano w innej karcie
+            OnRemoteFailure = async context =>
+            {
+                context.HandleResponse();
+                
+                var authResult = await context.HttpContext.AuthenticateAsync(IdentityConstants.ApplicationScheme);
+                if (authResult.Succeeded)
+                {
+                    context.Response.Redirect("/");
+                    return;
+                }
+
+                context.Response.Redirect("/Identity/Account/Login");
             }
         };
     });

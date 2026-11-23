@@ -83,6 +83,13 @@ KC_TEST_ADMIN_PASSWORD=admin
     ```shell
     openssl rand -hex 32
     ```
+  * Przy pierwszym uruchomieniu Keycloak automatycznie zaimportuje konfigurację realmu `agroskalka` z pliku `agroskalka-realm.json` i podstawi wartości z `.env`.
+  * **Panel administracyjny Keycloak:** `http://localhost:8080` (dane logowania z `KC_BOOTSTRAP_ADMIN_*` w `.env`).
+  * **Reset po zmianie sekretu lub danych w `.env`:** Import pliku JSON wykonuje się tylko na pustym wolumenie. Jeśli zmienisz `OIDC_CLIENT_SECRET` lub dane testowe już po pierwszym uruchomieniu, postaw kontener na czysto:
+    ```shell
+    docker compose down -v
+    docker compose up -d
+    ```
 
 ---
 
@@ -131,30 +138,13 @@ dotnet ef database update
 
 ---
 
-### 5. Uruchomienie Keycloak (Docker)
+## 🚀 Uruchomienie projektu (Tryb Deweloperski)
 
-Upewnij się, że masz uruchomiony **Docker Desktop** oraz uzupełniony plik `.env` (w szczególności `OIDC_CLIENT_SECRET`). W katalogu głównym projektu uruchom kontener:
+W katalogu głównym projektu uruchom kontenery Keycloak i Mailpit:
 
 ```shell
 docker compose up -d
 ```
-
-Przy pierwszym uruchomieniu Keycloak automatycznie zaimportuje konfigurację realmu `agroskalka` z pliku `agroskalka-realm.json` i podstawi wartości z `.env`.
-* **Panel administracyjny Keycloak:** `http://localhost:8080` (dane logowania z `KC_BOOTSTRAP_ADMIN_*` w `.env`).
-* **Reset po zmianie sekretu lub danych w `.env`:** Import pliku JSON wykonuje się tylko na pustym wolumenie. Jeśli zmienisz `OIDC_CLIENT_SECRET` lub dane testowe już po pierwszym uruchomieniu, postaw kontener na czysto:
-  ```shell
-  docker compose down -v
-  docker compose up -d
-  ```
-
----
-
-## 🚀 Uruchomienie projektu (Tryb Deweloperski)
-
-> Przed startem upewnij się, że kontener Keycloak działa w tle. Jeśli nie uruchom go:
->```shell
->docker compose up -d
->```
 
 Aby widzieć zmiany w kodzie C# (Hot Reload), style Tailwind CSS oraz odbierać potwierdzenia płatności ze Stripe w czasie rzeczywistym, uruchom trzy procesy w osobnych oknach terminala:
 
@@ -176,6 +166,11 @@ dotnet watch
 Jeśli nie potrzebujesz odświeżania na żywo, aplikację można uruchomić standardowo klawiszem `F5` / `Ctrl + F5` w Visual Studio (pamiętając o jednorazowym zbudowaniu stylów komendą `npx @tailwindcss/cli -i ./wwwroot/css/app.css -o ./wwwroot/css/site.css`).
 
 Domyślnie aplikacja uruchamia się pod adresem: `https://localhost:7xxx` lub `http://localhost:5xxx`.
+
+---
+
+#### **Lokalna skrzynka pocztowa (Mailpit):** [http://localhost:8025](http://localhost:8025)
+Uruchamia się automatycznie razem z `docker compose up -d` i przechwytuje wszystkie maile weryfikacyjne wysyłane przez Keycloak przy rejestracji (możesz podawać dowolne testowe adresy e-mail).
 
 ---
 
