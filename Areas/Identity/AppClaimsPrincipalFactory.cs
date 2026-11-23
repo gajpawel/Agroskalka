@@ -26,6 +26,11 @@ public class AppClaimsPrincipalFactory : UserClaimsPrincipalFactory<User, Role>
         {
             identity.AddClaim(new Claim("auth_provider", "Keycloak"));
         }
+        
+        if (!string.IsNullOrWhiteSpace(user.Name))
+            identity.AddClaim(new Claim(ClaimTypes.GivenName, user.Name));
+        if (!string.IsNullOrWhiteSpace(user.Surname))
+            identity.AddClaim(new Claim(ClaimTypes.Surname, user.Surname));
 
         return identity;
     }

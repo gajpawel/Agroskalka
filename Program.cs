@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using Agroskalka.Data;
 using Agroskalka.Models;
 using Agroskalka.Services.Captcha;
@@ -64,6 +65,30 @@ builder.Services.ConfigureApplicationCookie(o =>
 
 // Ustawianie ciasteczka po logowaniu przez OICD
 builder.Services.AddScoped<IUserClaimsPrincipalFactory<User>, AppClaimsPrincipalFactory>();
+
+// Przpysywanie danych do nowego ciasteczka po logowaniu przez OICD
+builder.Services.Configure<SecurityStampValidatorOptions>(options =>
+{
+    options.OnRefreshingPrincipal = context =>
+    {
+        var current = context.CurrentPrincipal;
+        var newIdentity = context.NewPrincipal?.Identity as ClaimsIdentity;
+
+        if (current != null && newIdentity != null)
+        {
+            foreach (var claimType in new[] { ClaimTypes.GivenName, ClaimTypes.Surname })
+            {
+                var claim = current.FindFirst(claimType);
+                if (claim != null && !newIdentity.HasClaim(c => c.Type == claimType))
+                {
+                    newIdentity.AddClaim(claim);
+                }
+            }
+        }
+
+        return Task.CompletedTask;
+    };
+});
 
 // Autoryzacja
 builder.Services.AddAuthorization(o =>

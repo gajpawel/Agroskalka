@@ -290,7 +290,6 @@ namespace Agroskalka.Migrations
                         .HasColumnName("lockout_end");
 
                     b.Property<string>("Name")
-                        .IsRequired()
                         .HasColumnType("text")
                         .HasColumnName("name");
 
@@ -321,7 +320,6 @@ namespace Agroskalka.Migrations
                         .HasColumnName("security_stamp");
 
                     b.Property<string>("Surname")
-                        .IsRequired()
                         .HasColumnType("text")
                         .HasColumnName("surname");
 

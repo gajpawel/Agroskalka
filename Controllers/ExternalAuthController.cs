@@ -78,6 +78,10 @@ public async Task<IActionResult> KeycloakCallback(string? returnUrl = "/")
             {
                 await _userManager.RemovePasswordAsync(existingUser);
             }
+            // Usuwamy lokalne dane
+            existingUser.Name = null;
+            existingUser.Surname = null;
+            await _userManager.UpdateAsync(existingUser);
 
             // Wyłączamy lokalne 2FA
             if (await _userManager.GetTwoFactorEnabledAsync(existingUser))
@@ -109,8 +113,8 @@ public async Task<IActionResult> KeycloakCallback(string? returnUrl = "/")
                 UserName = email,
                 Email = email,
                 EmailConfirmed = true,
-                Name = info.Principal.FindFirstValue(ClaimTypes.GivenName) ?? "Użytkownik",
-                Surname = info.Principal.FindFirstValue(ClaimTypes.Surname) ?? "Keycloak",
+                Name = null,
+                Surname = null,
                 IsActive = true,
                 IsApproved = true
             };
@@ -158,7 +162,17 @@ public async Task<IActionResult> KeycloakCallback(string? returnUrl = "/")
         });
     }
 
-    await _signInManager.SignInAsync(user, authProps);
+    var extraClaims = new List<Claim>();
+    var givenName = info.Principal.FindFirstValue(ClaimTypes.GivenName);
+    var surname = info.Principal.FindFirstValue(ClaimTypes.Surname);
+
+    if (!string.IsNullOrWhiteSpace(givenName))
+        extraClaims.Add(new Claim(ClaimTypes.GivenName, givenName));
+
+    if (!string.IsNullOrWhiteSpace(surname))
+        extraClaims.Add(new Claim(ClaimTypes.Surname, surname));
+
+    await _signInManager.SignInWithClaimsAsync(user, authProps, extraClaims);
     await HttpContext.SignOutAsync(IdentityConstants.ExternalScheme);
 
     return LocalRedirect(Url.IsLocalUrl(returnUrl) ? returnUrl : "/");

@@ -91,6 +91,11 @@ namespace Agroskalka.Areas.Identity.Pages.Account.Manage
 
         public async Task<IActionResult> OnPostAsync()
         {
+            if (User.HasClaim("auth_provider", "Keycloak"))
+            {
+                return Forbid();
+            }
+            
             var user = await _userManager.GetUserAsync(User);
             if (user == null)
             {

@@ -1,14 +1,13 @@
-﻿@using Microsoft.AspNetCore.Identity
+﻿@using System.Security.Claims
+@using Microsoft.AspNetCore.Identity
 @using Agroskalka.Models
 @inject SignInManager<User> SignInManager
-@inject UserManager<User> UserManager
 
 @if (SignInManager.IsSignedIn(User))
 {
-    var appUser = await UserManager.GetUserAsync(User);
-    
-    var displayName = appUser?.Name ?? User.Identity?.Name;
-    
+    var givenName = User.FindFirstValue(ClaimTypes.GivenName);
+    var displayName = !string.IsNullOrWhiteSpace(givenName) ? givenName : User.Identity?.Name;
+
     <div class="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-4">
         <span class="text-slate-800 sm:text-slate-600 font-medium px-3 sm:px-0">
             Witaj, @displayName!
