@@ -1,47 +1,41 @@
 # Agroskałka - System sprzedaży biletów wstępu
 
-Aplikacja webowa wspierająca proces rezerwacji oraz zakupu biletów do wiejskiego parku rozrywki **Agroskałka**. Projekt oparty jest o platformę **ASP.NET Core 8** (Razor Pages / Web API) oraz bazę danych **PostgreSQL** z wykorzystaniem **Entity Framework Core**. Interfejs użytkownika korzysta z **Tailwind CSS**, a płatności online obsługiwane są przez bramkę **Stripe**.
+Aplikacja webowa wspierająca proces rezerwacji oraz zakupu biletów do wiejskiego parku rozrywki **Agroskałka**. Projekt oparty jest o platformę **ASP.NET Core 8** (Razor Pages / Web API) oraz bazę danych **PostgreSQL** z wykorzystaniem **Entity Framework Core**. Interfejs użytkownika korzysta z **Tailwind CSS**, uwierzytelnianie opiera się o **Keycloak**, a płatności online obsługuje bramka **Stripe**.
 
 ---
 
 ## 🛠️ Wymagania wstępne
 
-Przed uruchomieniem upewnij się, że na swojej stacji roboczej masz zainstalowane:
+Przed pierwszym uruchomieniem upewnij się, że masz zainstalowane:
+* [Docker Desktop](https://www.docker.com/products/docker-desktop/) (obsługuje bazę danych PostgreSQL, Keycloak, Mailpit oraz tunel webhooków Stripe CLI)
 * [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0)
-* [Node.js](https://nodejs.org/) (wersja LTS) oraz menedżer pakietów **npm** (niezbędne do kompilacji Tailwind CSS)
-* [PostgreSQL](https://www.postgresql.org/download/) (wersja 14 lub nowsza) lub uruchomiony kontener Docker z PostgreSQL
-* pgAdmin4
-* [Stripe CLI](https://docs.stripe.com/stripe-cli) (wymagane do lokalnego testowania webhooków płatności)
-* [Docker Desktop](https://www.docker.com/products/docker-desktop/) (wymagany do uruchomienia lokalnego serwera uwierzytelniania Keycloak)
-* [Visual Studio 2022](https://visualstudio.microsoft.com/) (z pakietem *ASP.NET and web development*) lub Visual Studio Code / Rider
-* Globalne narzędzie EF Core CLI (opcjonalnie, jeśli używasz terminala):
-  ```shell
-  dotnet tool install --global dotnet-ef
-  ```
+* [Node.js](https://nodejs.org/) (wersja LTS — wymagany do kompilacji Tailwind CSS)
+* [Visual Studio 2022](https://visualstudio.microsoft.com/) / Rider / VS Code (opcjonalnie do edycji kodu)
+
+*(Nie musisz ręcznie instalować PostgreSQL ani Stripe CLI na swoim komputerze — działają w kontenerach Docker).*
 
 ---
 
 ## ⚙️ Pierwsza konfiguracja po sklonowaniu repozytorium
 
 ### 1. Przywrócenie zależności (NuGet & npm)
-
-W katalogu głównym projektu wykonaj przywracanie pakietów backendowych oraz frontendowych:
-
+W katalogu głównym projektu wykonaj:
 ```shell
 dotnet restore
 npm install
+
 ```
 
 ---
 
-### 2. Konfiguracja zmiennych środowiskowych (`.env`)
+### 2. Konfiguracja pliku `.env`
 
-> ⚠️ **Uwaga:** Pliki z poświadczeniami (`.env`) są ignorowane przez Git i nie trafiają do repozytorium.
+> ⚠️ **Uwaga:** Plik `.env` jest ignorowany przez Git i nie trafia do repozytorium.
 
-Projekt obsługuje zmienne środowiskowe z pliku `.env`. W katalogu głównym projektu (obok pliku `Agroskalka.csproj`) utwórz plik `.env` na podstawie poniższego wzorca:
+W katalogu głównym projektu (obok pliku `Agroskalka.csproj`) utwórz plik `.env` i uzupełnij go według poniższego wzorca:
 
 ```env
-# Baza danych PostgreSQL
+# Baza danych PostgreSQL (uruchamiana w Dockerze)
 DB_HOST=localhost
 DB_PORT=5432
 DB_NAME=agroskalka
@@ -70,121 +64,74 @@ KC_BOOTSTRAP_ADMIN_PASSWORD=admin
 # Dane do logowania na konto testowe administratora aplikacji przez Keycloak
 KC_TEST_ADMIN_USERNAME=admin@agroskalka.pl
 KC_TEST_ADMIN_PASSWORD=admin
+
 ```
 
-* **CAPTCHA:** Domyślnie włączona dla rejestracji oraz logowania hasłem. Utwórz widget Cloudflare Turnstile dla domeny aplikacji i ustaw klucze w `.env`.
-* **Stripe:** Zaloguj się do [Stripe Dashboard](https://dashboard.stripe.com/test/apikeys), przełącz panel w **Test mode** i skopiuj `Secret key` (`sk_test_...`) oraz `Publishable key` (`pk_test_...`).
-* **Keycloak (`OIDC_CLIENT_SECRET`):** Wygeneruj bezpieczny, kryptograficznie losowy sekret i wklej go jako wartość `OIDC_CLIENT_SECRET` w pliku `.env`. Możesz go wygenerować jedną z poniższych komend (wyświetli gotowy klucz w terminalu do skopiowania):
-  * **PowerShell (Windows):**
-    ```shell
-    [byte[]]$b = [byte[]]::new(32); [System.Security.Cryptography.RandomNumberGenerator]::Create().GetBytes($b); ([BitConverter]::ToString($b) -replace '-','').ToLower()
-    ```
-  * **Git Bash / Linux / macOS:**
-    ```shell
-    openssl rand -hex 32
-    ```
-  * Przy pierwszym uruchomieniu Keycloak automatycznie zaimportuje konfigurację realmu `agroskalka` z pliku `agroskalka-realm.json` i podstawi wartości z `.env`.
-  * **Panel administracyjny Keycloak:** `http://localhost:8080` (dane logowania z `KC_BOOTSTRAP_ADMIN_*` w `.env`).
-  * **Reset po zmianie sekretu lub danych w `.env`:** Import pliku JSON wykonuje się tylko na pustym wolumenie. Jeśli zmienisz `OIDC_CLIENT_SECRET` lub dane testowe już po pierwszym uruchomieniu, postaw kontener na czysto:
-    ```shell
-    docker compose down -v
-    docker compose up -d
-    ```
+#### Jak uzupełnić klucze w `.env`:
 
----
+1. **CAPTCHA:** Utwórz widget Cloudflare Turnstile dla domeny aplikacji i wklej `SITEKEY` oraz `SECRETKEY`.
+2. **Stripe:**
+* Zaloguj się do [Stripe Dashboard](https://dashboard.stripe.com/test/apikeys), przełącz panel w **Test mode** i skopiuj `Secret key` (`sk_test_...`) oraz `Publishable key` (`pk_test_...`).
+* W [Settings $\to$ Payment methods](https://dashboard.stripe.com/test/settings/payment_methods) włącz **Cards**, **BLIK** oraz **Przelewy24**.
+* Po pierwszym uruchomieniu projektu (krok niżej) sprawdź logi kontenera Stripe poleceniem `docker logs agroskalka-stripe`, skopiuj wyświetlony klucz `whsec_...`, wklej go jako `STRIPE_WEBHOOK_SECRET` w `.env` i zrestartuj aplikację.
 
-### 3. Konfiguracja bramki płatności Stripe (Test Mode)
 
-1. **Włączenie metod płatności:**
-   W [Stripe Dashboard](https://dashboard.stripe.com/test/settings/payment_methods) przejdź do **Settings $\to$ Payment methods** i upewnij się, że włączone są:
-   * **Cards** (Karty płatnicze)
-   * **BLIK**
-   * **Przelewy24**
-
-2. **Konfiguracja lokalnego Webhooka (Stripe CLI):**
-   Aby aplikacja automatycznie zmieniała status biletu na opłacony (`IsPaid = true`) po zakończeniu płatności na `localhost`, musisz przekierować zdarzenia ze Stripe za pomocą Stripe CLI:
-   * Zaloguj się w terminalu:
-     ```shell
-     stripe login
-     ```
-   * Uruchom nasłuchiwanie i przekierowanie na adres lokalnego kontrolera webhooków (dopasuj numer portu z pliku `Properties/launchSettings.json`, np. `7251`):
-     ```shell
-     stripe listen --forward-to https://localhost:7251/api/webhooks/stripe --skip-verify --all-snapshot
-     ```
-   * Skopiuj wygenerowany przez komendę klucz podpisu (zaczynający się od `whsec_...`) i wklej go do pliku `.env` jako wartość zmiennej `STRIPE_WEBHOOK_SECRET`, a następnie zrestartuj aplikację.
-   * Aby przetestować płatność, użyj deweloperskiej karty płatniczej o numerze 4242 4242 4242 4242, data ważności dowolna większa niż dzisiaj, pozostałe dane dowolne spełniające wymagania formularza
-
----
-
-### 4. Utworzenie bazy danych i aplikowanie migracji
-
-1. Upewnij się, że usługa PostgreSQL jest aktywna.
-2. Utwórz pustą bazę danych (np. przez pgAdmin, psql lub terminal):
-```shell
-# W psql:
-CREATE DATABASE agroskalka;
-```
-
-3. Zaaplikuj migracje EF Core oraz domyślne dane początkowe (seeder):
-* **W Visual Studio (Package Manager Console):**
+3. **Keycloak (`OIDC_CLIENT_SECRET`):** Wygeneruj losowy 32-bajtowy klucz w terminalu i wklej do `.env`:
+* **PowerShell:**
 ```powershell
-Update-Database
+[byte[]]$b = [byte[]]::new(32); [System.Security.Cryptography.RandomNumberGenerator]::Create().GetBytes($b); ([BitConverter]::ToString($b) -replace '-','').ToLower()
+
 ```
 
-* **W standardowym terminalu (.NET CLI):**
+
+* **Bash / Linux / macOS:**
 ```shell
-dotnet ef database update
+openssl rand -hex 32
+
 ```
+
+
+
+
 
 ---
 
-## 🚀 Uruchomienie projektu (Tryb Deweloperski)
+## 🚀 Uruchomienie projektu
 
-W katalogu głównym projektu uruchom kontenery Keycloak i Mailpit:
+1. Upewnij się, że **Docker Desktop** jest włączony.
+2. Kliknij dwukrotnie plik **`start.bat`** w głównym folderze projektu (lub wpisz `.\start.bat` w terminalu).
 
-```shell
-docker compose up -d
-```
+Skrypt automatycznie:
 
-Aby widzieć zmiany w kodzie C# (Hot Reload), style Tailwind CSS oraz odbierać potwierdzenia płatności ze Stripe w czasie rzeczywistym, uruchom trzy procesy w osobnych oknach terminala:
+1. Postawi kontenery **PostgreSQL**, **Keycloak**, **Mailpit** oraz **Stripe CLI**.
+2. Uruchomi w osobnym oknie kompilator **Tailwind CSS** w trybie `--watch`.
+3. Uruchomi aplikację **ASP.NET Core (`dotnet watch`)** oraz automatycznie nałoży migracje bazy danych wraz z danymi początkowymi.
 
-**Terminal 1 (Kompilacja Tailwind CSS w tle):**
-```shell
-npx @tailwindcss/cli -i ./wwwroot/css/app.css -o ./wwwroot/css/site.css --watch
-```
-
-**Terminal 2 (Tunel webhooków Stripe):**
-```shell
-stripe listen --forward-to https://localhost:7251/api/webhooks/stripe --skip-verify --all-snapshot
-```
-
-**Terminal 3 (Uruchomienie serwera .NET z Hot Reload):**
-```shell
-dotnet watch
-```
-
-Jeśli nie potrzebujesz odświeżania na żywo, aplikację można uruchomić standardowo klawiszem `F5` / `Ctrl + F5` w Visual Studio (pamiętając o jednorazowym zbudowaniu stylów komendą `npx @tailwindcss/cli -i ./wwwroot/css/app.css -o ./wwwroot/css/site.css`).
-
-Domyślnie aplikacja uruchamia się pod adresem: `https://localhost:7xxx` lub `http://localhost:5xxx`.
+*(Jeśli pracujesz z poziomu Visual Studio: uruchom raz `docker compose up -d` w terminalu, a następnie uruchamiaj aplikację standardowo klawiszem `F5`).*
 
 ---
 
-#### **Lokalna skrzynka pocztowa (Mailpit):** [http://localhost:8025](http://localhost:8025)
-Uruchamia się automatycznie razem z `docker compose up -d` i przechwytuje wszystkie maile weryfikacyjne wysyłane przez Keycloak przy rejestracji (możesz podawać dowolne testowe adresy e-mail).
+## 🌐 Przydatne adresy lokalne i dane testowe
 
----
+* **Aplikacja Agroskałka:** `https://localhost:7251` (lub port wskazany w konsoli przy starcie)
+* **Panel administracyjny Keycloak:** [http://localhost:8080](http://localhost:8080) (login/hasło z `KC_BOOTSTRAP_ADMIN_*` w `.env`)
+* **Lokalna skrzynka pocztowa (Mailpit):** [http://localhost:8025](http://localhost:8025) (przechwytuje wszystkie maile z rejestracji)
+* **Testowa karta płatnicza Stripe:** numer `4242 4242 4242 4242`, dowolna przyszła data ważności i kod CVC.
 
-## 👤 Domyślne dane dostępowe (Seeder)
+### Domyślne konta (Seeder / Keycloak)
 
-Po nałożeniu migracji baza danych zostaje automatycznie zainicjalizowana domyślnymi rolami oraz kontem administratora:
+| Rola | Email | Hasło |
+| --- | --- | --- |
+| **Administrator (lokalne)** | `account@example.com` | `Haslo1` |
+| **Administrator (Keycloak)** | `admin@agroskalka.pl` | `admin` |
 
-| Rola | Email | Hasło | Id roli |
-| --- | --- | --- | --- |
-| **Administrator** | `account@example.com` | `Haslo1` | `1` |
-| **Klient** | *(do rejestracji)* | — | `2` |
+### Resetowanie kontenerów
 
----
+Jeśli zmienisz hasła lub `OIDC_CLIENT_SECRET` w pliku `.env` już po pierwszym uruchomieniu, zresetuj wolumeny Dockera komendą:
 
-## 📂 Konwencje bazodanowe
+```shell
+docker compose down -v
 
-Wszystkie tabele oraz kolumny w bazie PostgreSQL generowane są automatycznie w formacie **`snake_case`** za pośredwem pakietu `EFCore.NamingConventions`. W kodzie C# zachowujemy standardowy **`PascalCase`**.
+```
+
+a następnie ponownie uruchom `start.bat`.

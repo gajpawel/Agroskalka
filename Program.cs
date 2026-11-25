@@ -194,6 +194,8 @@ var app = builder.Build();
 // Seeder - tworzenie domy�lnych r�l i administratora
 using (var scope = app.Services.CreateScope())
 {
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    db.Database.Migrate();
     var roles = scope.ServiceProvider.GetRequiredService<RoleManager<Role>>();
     var users = scope.ServiceProvider.GetRequiredService<UserManager<User>>();
 
