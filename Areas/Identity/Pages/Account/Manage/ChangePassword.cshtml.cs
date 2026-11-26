@@ -45,7 +45,7 @@ namespace Agroskalka.Areas.Identity.Pages.Account.Manage
             public string OldPassword { get; set; }
 
             [Required(ErrorMessage = "Podaj nowe hasło.")]
-            [StringLength(100, ErrorMessage = "Pole {0} musi mieć od {2} do {1} znaków.", MinimumLength = 6)]
+            [StringLength(100, ErrorMessage = "Pole {0} musi mieć od {2} do {1} znaków.", MinimumLength = 12)]
             [DataType(DataType.Password)]
             [Display(Name = "Nowe hasło")]
             public string NewPassword { get; set; }

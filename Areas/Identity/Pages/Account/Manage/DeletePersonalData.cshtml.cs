@@ -46,6 +46,9 @@ namespace Agroskalka.Areas.Identity.Pages.Account.Manage
 
         public async Task<IActionResult> OnGet()
         {
+            if (User.IsInRole("Admin"))
+                return RedirectToPage("./PersonalData");
+
             var user = await _userManager.GetUserAsync(User);
             if (user == null)
             {
@@ -58,6 +61,9 @@ namespace Agroskalka.Areas.Identity.Pages.Account.Manage
 
         public async Task<IActionResult> OnPostAsync()
         {
+            if (User.IsInRole("Admin"))
+                return RedirectToPage("./PersonalData");
+
             var user = await _userManager.GetUserAsync(User);
             if (user == null)
             {
@@ -74,11 +80,33 @@ namespace Agroskalka.Areas.Identity.Pages.Account.Manage
                 }
             }
 
-            var result = await _userManager.DeleteAsync(user);
             var userId = await _userManager.GetUserIdAsync(user);
+
+            // Anonimizacja zamiast usunięcia (bilety zostają w bazie)
+            var anonymizedEmail = $"usuniety-{userId}@invalid.local";
+
+            user.Name = "Usunięty";
+            user.Surname = "Użytkownik";
+            user.Email = anonymizedEmail;
+            user.UserName = anonymizedEmail;
+            user.PhoneNumber = null;
+            user.PasswordHash = null;
+            user.IsActive = false;
+            user.LockoutEnabled = true;
+            user.LockoutEnd = DateTimeOffset.MaxValue;
+
+            var result = await _userManager.UpdateAsync(user);
             if (!result.Succeeded)
             {
-                throw new InvalidOperationException("Wystąpił nieoczekiwany błąd podczas usuwania konta.");
+                ModelState.AddModelError(string.Empty, "Nie udało się usunąć konta. Spróbuj ponownie.");
+                return Page();
+            }
+
+            // Unieważnienie istniejących sesji i usunięcie powiązanych danych logowania
+            await _userManager.UpdateSecurityStampAsync(user);
+            foreach (var login in await _userManager.GetLoginsAsync(user))
+            {
+                await _userManager.RemoveLoginAsync(user, login.LoginProvider, login.ProviderKey);
             }
 
             await _signInManager.SignOutAsync();

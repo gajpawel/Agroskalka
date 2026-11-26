@@ -41,12 +41,17 @@ builder.Services
     .Bind(builder.Configuration.GetSection(CaptchaOptions.SectionName));
 builder.Services.AddHttpClient<ICaptchaService, TurnstileCaptchaService>();
 
-// ASP.NET Identity
+// ASP.NET Identity + rate limiting
 builder.Services.AddIdentity<User, Role>(o =>
 {
     o.User.RequireUniqueEmail = true;
-    o.Password.RequiredLength = 6;
+    //wymagania do hasła
+    o.Password.RequiredLength = 12;
     o.Password.RequireNonAlphanumeric = false;
+    o.Password.RequireDigit = false;
+    o.Password.RequireLowercase = false;
+    o.Password.RequireUppercase = false;
+    //nieudane logowania
     o.Lockout.MaxFailedAccessAttempts = 5;
     o.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(15);
 })
