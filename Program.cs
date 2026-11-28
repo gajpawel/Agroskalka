@@ -117,11 +117,11 @@ builder.Services.AddRateLimiter(o =>
 {
     o.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
 
-    // Logowanie / rejestracja: 5 prób na minutę na IP (tylko POST)
-    o.AddPolicy("auth", ctx =>
-        ctx.Request.Method == HttpMethods.Post
+    // Logowanie: 5 prób / min / IP (tylko POST)
+    o.AddPolicy("login", ctx =>
+        HttpMethods.IsPost(ctx.Request.Method)
             ? RateLimitPartition.GetFixedWindowLimiter(
-                ctx.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+                $"login:{ctx.Connection.RemoteIpAddress}",
                 _ => new FixedWindowRateLimiterOptions
                 {
                     PermitLimit = 5,
@@ -130,10 +130,62 @@ builder.Services.AddRateLimiter(o =>
                 })
             : RateLimitPartition.GetNoLimiter("get"));
 
-    // Globalny limit dla całej aplikacji: 100 żądań/min na IP
+    // Kod 2FA: 5 prób / min / IP (tylko POST)
+    o.AddPolicy("mfa", ctx =>
+        HttpMethods.IsPost(ctx.Request.Method)
+            ? RateLimitPartition.GetFixedWindowLimiter(
+                $"mfa:{ctx.Connection.RemoteIpAddress}",
+                _ => new FixedWindowRateLimiterOptions
+                {
+                    PermitLimit = 5,
+                    Window = TimeSpan.FromMinutes(1),
+                    QueueLimit = 0
+                })
+            : RateLimitPartition.GetNoLimiter("get"));
+
+    // Rejestracja: 3 próby / godzinę / IP (tylko POST)
+    o.AddPolicy("register", ctx =>
+        HttpMethods.IsPost(ctx.Request.Method)
+            ? RateLimitPartition.GetFixedWindowLimiter(
+                $"register:{ctx.Connection.RemoteIpAddress}",
+                _ => new FixedWindowRateLimiterOptions
+                {
+                    PermitLimit = 3,
+                    Window = TimeSpan.FromHours(1),
+                    QueueLimit = 0
+                })
+            : RateLimitPartition.GetNoLimiter("get"));
+
+    // Wrażliwe akcje na koncie: 5 prób / 15 min / użytkownik (tylko POST)
+    o.AddPolicy("sensitive-account", ctx =>
+        HttpMethods.IsPost(ctx.Request.Method)
+            ? RateLimitPartition.GetFixedWindowLimiter(
+                $"sensitive:{ctx.User.FindFirstValue(ClaimTypes.NameIdentifier) ?? ctx.Connection.RemoteIpAddress?.ToString() ?? "unknown"}",
+                _ => new FixedWindowRateLimiterOptions
+                {
+                    PermitLimit = 5,
+                    Window = TimeSpan.FromMinutes(15),
+                    QueueLimit = 0
+                })
+            : RateLimitPartition.GetNoLimiter("get"));
+
+    // Zakup biletu: 10 prób / 10 min / użytkownik (tylko POST)
+    o.AddPolicy("buy-ticket", ctx =>
+        HttpMethods.IsPost(ctx.Request.Method)
+            ? RateLimitPartition.GetFixedWindowLimiter(
+                $"buy:{ctx.User.FindFirstValue(ClaimTypes.NameIdentifier) ?? ctx.Connection.RemoteIpAddress?.ToString() ?? "unknown"}",
+                _ => new FixedWindowRateLimiterOptions
+                {
+                    PermitLimit = 10,
+                    Window = TimeSpan.FromMinutes(10),
+                    QueueLimit = 0
+                })
+            : RateLimitPartition.GetNoLimiter("get"));
+
+    // Globalnie: 100 żądań / min / IP
     o.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(ctx =>
         RateLimitPartition.GetFixedWindowLimiter(
-            ctx.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+            $"global:{ctx.Connection.RemoteIpAddress}",
             _ => new FixedWindowRateLimiterOptions
             {
                 PermitLimit = 100,
@@ -264,9 +316,9 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
-app.UseRateLimiter();
 // Uwierzytelnianie musi by� przed autoryzacj�
 app.UseAuthentication();
+app.UseRateLimiter();
 app.UseAuthorization();
 
 app.MapRazorPages();

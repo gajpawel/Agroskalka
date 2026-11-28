@@ -14,7 +14,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Agroskalka.Areas.Identity.Pages.Account.Manage
 {
-    [EnableRateLimiting("auth")]
+    [EnableRateLimiting("sensitive-account")]
     public class DeletePersonalDataModel : PageModel
     {
         private readonly UserManager<User> _userManager;

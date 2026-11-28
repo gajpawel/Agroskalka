@@ -24,7 +24,7 @@ using Microsoft.AspNetCore.RateLimiting;
 
 namespace Agroskalka.Areas.Identity.Pages.Account
 {
-    [EnableRateLimiting("auth")]
+    [EnableRateLimiting("register")]
     public class RegisterModel : PageModel
     {
         private readonly SignInManager<User> _signInManager;

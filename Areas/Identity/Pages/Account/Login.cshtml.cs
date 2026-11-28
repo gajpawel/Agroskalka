@@ -20,7 +20,7 @@ using Microsoft.AspNetCore.RateLimiting;
 
 namespace Agroskalka.Areas.Identity.Pages.Account
 {
-    [EnableRateLimiting("auth")]
+    [EnableRateLimiting("login")]
     public class LoginModel : PageModel
     {
         private readonly SignInManager<User> _signInManager;
@@ -176,7 +176,7 @@ namespace Agroskalka.Areas.Identity.Pages.Account
             {
                 ModelState.AddModelError(
                     string.Empty,
-                    "Nieprawidłowy email lub hasło."
+                    "Logowanie nieudane."
                 );
 
                 return Page();
@@ -211,7 +211,7 @@ namespace Agroskalka.Areas.Identity.Pages.Account
             {
                 ModelState.AddModelError(
                     string.Empty,
-                    "Konto zostało zablokowane. Spróbuj ponownie później."
+                    "Logowanie nieudane."
                 );
 
                 return Page();
@@ -219,7 +219,7 @@ namespace Agroskalka.Areas.Identity.Pages.Account
 
             ModelState.AddModelError(
                 string.Empty,
-                "Nieprawidłowy email lub hasło."
+                "Logowanie nieudane."
             );
 
             return Page();

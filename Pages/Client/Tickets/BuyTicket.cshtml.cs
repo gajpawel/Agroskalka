@@ -3,6 +3,7 @@ using Agroskalka.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Stripe.Checkout;
 using System.Security.Claims;
@@ -11,6 +12,7 @@ using System.Security.Cryptography;
 namespace Agroskalka.Pages.Tickets;
 
 [Authorize]
+[EnableRateLimiting("buy-ticket")]
 [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
 public class BuyTicketModel : PageModel
 {

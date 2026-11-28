@@ -9,6 +9,7 @@ using Agroskalka.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.AspNetCore.RateLimiting;
 // Potwierdzanie przez e-mail (wyłączone):
 // using System.Text;
 // using System.Text.Encodings.Web;
@@ -17,6 +18,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace Agroskalka.Areas.Identity.Pages.Account.Manage
 {
+    [EnableRateLimiting("sensitive-account")]
     public class EmailModel : PageModel
     {
         private readonly UserManager<User> _userManager;
